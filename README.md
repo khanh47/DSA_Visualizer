@@ -1,2 +1,2 @@
-# QuadTree_Visualizer
-A visualizer of Quad Tree Data Structures
+# DSA_Visualizer
+A visualizer of Data Structures
