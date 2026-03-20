@@ -7,7 +7,7 @@ ResourceManager &ResourceManager::getInstance() {
 	return instance; // Always returns same instance
 }
 
-void ResourceManager::_preLoadTexture2D(const std::string &filename, const std::string &alias) {
+void ResourceManager::_preLoadTexture(const std::string &filename, const std::string &alias) {
 	if (_textures.find(filename) != _textures.end()) {
 		std::cerr << "Texture already loaded: " << filename << std::endl;
 		return;
@@ -27,14 +27,14 @@ void ResourceManager::_preLoadFont(const std::string &filename, const std::strin
 		return;
 
 	sf::Font font;
-	if (!font.openFromFile(filename))
+	if (!font.loadFromFile(filename))
 		throw std::runtime_error("Failed to load font: " + filename);
 
 	_fonts[filename] = font;
 	_MappingAliasToFilename[alias] = filename;
 }
 
-void ResourceManager::_unloadTexture2D(const std::string &alias) {
+void ResourceManager::_unloadTexture(const std::string &alias) {
 	auto it = _MappingAliasToFilename.find(alias);
 	if (it != _MappingAliasToFilename.end()) {
 		const std::string &filename = it->second;
@@ -59,7 +59,7 @@ void ResourceManager::_unloadFont(const std::string &alias) {
 }
 
 // flyweight pattern implementation
-sf::Texture &ResourceManager::getTexture2D(const std::string &alias) {
+sf::Texture &ResourceManager::getTexture(const std::string &alias) {
 	auto it = _MappingAliasToFilename.find(alias);
 	if (it != _MappingAliasToFilename.end()) {
 		const std::string &filename = it->second;

@@ -1,32 +1,30 @@
 #include "MenuScene.h"
 #include "SceneManager.h"
 #include "ResourceManager.h"
+#include "GraphScene.h"
+#include "SceneCommand.h"
 #include <iostream>
 
 MenuScene::MenuScene(SceneManager& sceneManager) : manager(sceneManager) {
+    // Initialize UI button
+    startButton = std::unique_ptr<UI::Button>(new UI::Button({20.0f, 80.0f}, {220.0f, 60.0f}, sf::Color(100, 149, 237), "DSA Visualization", 28));
+    startButton->setCommand(createGraphSceneCommand(manager));
 }
 
 void MenuScene::processEvents(const sf::Event& event) {
-    if (const auto* mouseClick = event.getIf<sf::Event::MouseButtonPressed>()) {
-        if (mouseClick->button == sf::Mouse::Button::Left) {
-            sf::Vector2f clickPos(static_cast<float>(mouseClick->position.x), 
-                                  static_cast<float>(mouseClick->position.y));
-            //if (quadTreeButton.getGlobalBounds().contains(clickPos)) {
-            //    std::cout << "Transitioning to Quad Tree...\n";
-            //}
-        }
-    }
+    startButton->processEvent(event);
 }
 
 void MenuScene::update(float deltaTime) {
 }
 
 void MenuScene::render(sf::RenderWindow& window) {
-    sf::Font font = ResourceManager::getInstance().getFont("Roboto");
+    sf::Font &font = ResourceManager::getInstance().getFont("Roboto");
 
-    sf::Text label(font, "Main Menu", 24);
+    sf::Text label("Main Menu", font, 24);
     label.setFillColor(sf::Color::Red);
     label.setPosition({20.0f, 20.0f});
 
     window.draw(label);
+    startButton->render(window);
 }

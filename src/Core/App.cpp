@@ -17,11 +17,12 @@ void App::run() {
 }
 
 void App::processEvents() {
-    while (const std::optional<sf::Event> event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    sf::Event event;
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
             window.close();
         }
-        manager->processEvents(*event);
+        manager->processEvents(event);
     }
 }
 

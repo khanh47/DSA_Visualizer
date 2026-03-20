@@ -1,16 +1,20 @@
 #pragma once
 #include "BaseScene.h"
 #include <SFML/Graphics.hpp>
+#include <memory>
+#include "Button.h"
+#include "ICommand.h"
+#include "SceneCommand.h"
 
 // Forward declaration
 class SceneManager;
 
 class MenuScene : public BaseScene {
 private:
-    SceneManager& manager; // The link back to your state stack
+    SceneManager& manager;
+    std::unique_ptr<UI::Button> startButton;
 
 public:
-    // Constructor requires the manager!
     MenuScene(SceneManager& sceneManager);
     ~MenuScene() override = default;
 

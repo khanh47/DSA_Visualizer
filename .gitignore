@@ -3,6 +3,10 @@
 
 *.dll
 
+# build dir
+bin
+build
+
 makefile
 Makefile
 /.vscode
