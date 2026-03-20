@@ -1,7 +1,6 @@
 #include "SceneManager.h"
 #include "BaseScene.h"
 #include "MenuScene.h"
-// include the other 4 visualizers here once you make them
 
 SceneManager::SceneManager() {
 }

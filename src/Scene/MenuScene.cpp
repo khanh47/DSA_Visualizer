@@ -21,7 +21,7 @@ void MenuScene::update(float deltaTime) {
 void MenuScene::render(sf::RenderWindow& window) {
     sf::Font &font = ResourceManager::getInstance().getFont("Roboto");
 
-    sf::Text label("Main Menu", font, 24);
+    sf::Text label(font, "Main Menu", 24);
     label.setFillColor(sf::Color::Red);
     label.setPosition({20.0f, 20.0f});
 

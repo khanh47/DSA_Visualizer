@@ -27,7 +27,7 @@ void ResourceManager::_preLoadFont(const std::string &filename, const std::strin
 		return;
 
 	sf::Font font;
-	if (!font.loadFromFile(filename))
+	if (!font.openFromFile(filename))
 		throw std::runtime_error("Failed to load font: " + filename);
 
 	_fonts[filename] = font;
