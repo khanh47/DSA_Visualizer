@@ -1,0 +1,38 @@
+#pragma once
+#include "BaseScene.h"
+#include "Button.h"
+#include "BaseVisualizer.h"
+#include "SceneManager.h"
+#include <SFML/Graphics.hpp>
+#include <string>
+#include <vector>
+
+class VisualizationScene : public BaseScene {
+public:
+    VisualizationScene(SceneManager& manager);
+    virtual ~VisualizationScene() = default;
+
+    // Public methods for operation dispatch
+    void setVisualizer(BaseVisualizer* visualizer);
+    void displayStatus(const std::string& message);
+
+    // BaseScene overrides
+    void processEvents(const sf::Event& event) override;
+    void update(float deltaTime) override;
+    void render(sf::RenderWindow& window) override;
+
+    // Hook methods for child classes to implement
+    virtual void onInsert(const std::string& value) = 0;
+    virtual void onSearch(const std::string& value) = 0;
+    virtual void onDelete(const std::string& value) = 0;
+    virtual void onUpdate(const std::string& key, const std::string& value) = 0;
+
+protected:
+    SceneManager& manager;
+    BaseVisualizer* visualizer;
+    sf::Text statusText;
+    std::unique_ptr<UI::Button> backButton;
+
+    // Helper method for child classes to override
+    virtual std::string getSceneTitle() const = 0;
+};
