@@ -6,13 +6,36 @@
 #include <iostream>
 
 MenuScene::MenuScene(SceneManager& sceneManager) : manager(sceneManager) {
-    // Initialize UI button
-    startButton = std::unique_ptr<UI::Button>(new UI::Button({20.0f, 80.0f}, {220.0f, 60.0f}, sf::Color(100, 149, 237), "DSA Visualization", 28));
-    startButton->setCommand(createGraphSceneCommand(manager));
+    btnMenu = std::make_unique<UI::ButtonMenu>();
+
+    const float windowWidth = 1920.0f;
+    const float windowHeight = 1080.0f;
+    const sf::Vector2f buttonSize = {220.0f, 220.0f};
+    const float spacing = 400.0f;
+    const int buttonCount = 4;
+    const float totalRowWidth = (buttonCount - 1) * spacing + buttonSize.x;
+    const float centeredX = (windowWidth - totalRowWidth) / 2.0f;
+    const float centeredY = (windowHeight - buttonSize.y) / 2.0f;
+
+    btnMenu->setLayoutProperties(
+        {centeredX, centeredY},
+        buttonSize,
+        spacing,
+        true,
+        sf::Color(100, 149, 237),
+        28
+    );
+
+    btnMenu->addButtonAuto("Linked List", createLinkedListSceneCommand(manager));
+    btnMenu->addButtonAuto("Hash Table", createHashTableSceneCommand(manager));
+    btnMenu->addButtonAuto("Tree", createTreeSceneCommand(manager));
+    btnMenu->addButtonAuto("Graph", createGraphSceneCommand(manager));
 }
 
 void MenuScene::processEvents(const sf::Event& event) {
-    startButton->processEvent(event);
+    if (btnMenu) {
+        btnMenu->processEvent(event);
+    }
 }
 
 void MenuScene::update(float deltaTime) {
@@ -21,10 +44,14 @@ void MenuScene::update(float deltaTime) {
 void MenuScene::render(sf::RenderWindow& window) {
     sf::Font &font = ResourceManager::getInstance().getFont("Roboto");
 
-    sf::Text label(font, "Main Menu", 24);
+    sf::Text label(font, "Data Structures Visualizer", 30);
     label.setFillColor(sf::Color::Red);
-    label.setPosition({20.0f, 20.0f});
+    const sf::FloatRect bounds = label.getLocalBounds();
+    label.setOrigin({bounds.position.x + bounds.size.x / 2.0f, bounds.position.y});
+    label.setPosition({window.getSize().x / 2.0f, 20.0f});
 
     window.draw(label);
-    startButton->render(window);
+    if (btnMenu) {
+        btnMenu->render(window);
+    }
 }
