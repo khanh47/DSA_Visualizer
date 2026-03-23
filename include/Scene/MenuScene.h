@@ -2,7 +2,7 @@
 #include "BaseScene.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include "Button.h"
+#include "ButtonMenu.h"
 #include "ICommand.h"
 #include "SceneCommand.h"
 
@@ -12,7 +12,7 @@ class SceneManager;
 class MenuScene : public BaseScene {
 private:
     SceneManager& manager;
-    std::unique_ptr<UI::Button> startButton;
+    std::unique_ptr<UI::ButtonMenu> btnMenu;
 
 public:
     MenuScene(SceneManager& sceneManager);

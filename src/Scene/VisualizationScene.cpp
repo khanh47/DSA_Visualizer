@@ -9,7 +9,7 @@ VisualizationScene::VisualizationScene(SceneManager& sceneManager)
       statusText(ResourceManager::getInstance().getFont("Roboto"), "") {
     
     // Initialize back button
-    backButton = std::unique_ptr<UI::Button>(new UI::Button({20.0f, 80.0f}, {220.0f, 60.0f}, sf::Color(100, 149, 237), "Back to menu", 28));
+    backButton = std::unique_ptr<UI::Button>(new UI::Button({20.0f, 20.0f}, {220.0f, 60.0f}, sf::Color(100, 149, 237), "Back to menu", 28));
     backButton->setCommand(createPopSceneCommand(manager));
     
     // TODO: Initialize operation buttons (Insert, Search, Delete, Update)
@@ -46,10 +46,16 @@ void VisualizationScene::render(sf::RenderWindow& window) {
         visualizer->render(window);
     }
     
-    // TODO: Render visualization area
-    // TODO: Render operation buttons
-    // TODO: Render statusText
-    
     // Render back button
     backButton->render(window);
+
+    // text to recognize each scene (can delete later)
+    sf::Font &font = ResourceManager::getInstance().getFont("Roboto");
+    sf::Text label(font, getSceneTitle(), 30);
+    label.setFillColor(sf::Color::Red);
+    const sf::FloatRect bounds = label.getLocalBounds();
+    label.setOrigin({bounds.position.x + bounds.size.x / 2.0f, bounds.position.y});
+    label.setPosition({window.getSize().x / 2.0f, 20.0f});
+
+    window.draw(label);
 }

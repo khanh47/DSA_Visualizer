@@ -20,7 +20,40 @@ private:
     std::string commandName;
 };
 
-// Factory function to create graph scene command
+// Factory function to create visualize scene command
+inline std::unique_ptr<SceneCommand> createLinkedListSceneCommand(SceneManager& manager) {
+    return std::unique_ptr<SceneCommand>(new SceneCommand(
+        manager,
+        [](SceneManager& mgr) -> std::unique_ptr<BaseScene> {
+            extern std::unique_ptr<BaseScene> createLinkedListSceneFactory(SceneManager&);
+            return createLinkedListSceneFactory(mgr);
+        },
+        "Push LinkedList Scene"
+    ));
+}
+
+inline std::unique_ptr<SceneCommand> createHashTableSceneCommand(SceneManager& manager) {
+    return std::unique_ptr<SceneCommand>(new SceneCommand(
+        manager,
+        [](SceneManager& mgr) -> std::unique_ptr<BaseScene> {
+            extern std::unique_ptr<BaseScene> createHashTableSceneFactory(SceneManager&);
+            return createHashTableSceneFactory(mgr);
+        },
+        "Push HashTable Scene"
+    ));
+}
+
+inline std::unique_ptr<SceneCommand> createTreeSceneCommand(SceneManager& manager) {
+    return std::unique_ptr<SceneCommand>(new SceneCommand(
+        manager,
+        [](SceneManager& mgr) -> std::unique_ptr<BaseScene> {
+            extern std::unique_ptr<BaseScene> createTreeSceneFactory(SceneManager&);
+            return createTreeSceneFactory(mgr);
+        },
+        "Push Tree Scene"
+    ));
+}
+
 inline std::unique_ptr<SceneCommand> createGraphSceneCommand(SceneManager& manager) {
     return std::unique_ptr<SceneCommand>(new SceneCommand(
         manager,

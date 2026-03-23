@@ -1,4 +1,7 @@
 #include "SceneCommand.h"
+#include "LinkedListScene.h"
+#include "HashTableScene.h"
+#include "TreeScene.h"
 #include "GraphScene.h"
 #include <iostream>
 
@@ -15,7 +18,19 @@ void SceneCommand::execute() {
     }
 }
 
-// Factory implementation for graph scene
+// Factory implementation for visualize scene
+std::unique_ptr<BaseScene> createLinkedListSceneFactory(SceneManager& manager) {
+    return std::make_unique<LinkedListScene>(manager);
+}
+
+std::unique_ptr<BaseScene> createHashTableSceneFactory(SceneManager& manager) {
+    return std::make_unique<HashTableScene>(manager);
+}
+
+std::unique_ptr<BaseScene> createTreeSceneFactory(SceneManager& manager) {
+    return std::make_unique<TreeScene>(manager);
+}
+
 std::unique_ptr<BaseScene> createGraphSceneFactory(SceneManager& manager) {
     return std::make_unique<GraphScene>(manager);
 }
