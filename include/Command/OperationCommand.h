@@ -1,5 +1,6 @@
 #pragma once
 #include "ICommand.h"
+#include <memory>
 #include <string>
 
 enum class OperationType {
@@ -9,16 +10,35 @@ enum class OperationType {
     UPDATE
 };
 
-class VisualizationScene; // Forward declaration
+class OperationPanel; // Forward declaration
 
 class OperationCommand : public ICommand {
 public:
-    OperationCommand(VisualizationScene* scene, OperationType type, const std::string& value);
+    OperationCommand(OperationPanel* panel, OperationType type);
     
     void execute() override;
 
 private:
-    VisualizationScene* scene;
+    OperationPanel* panel;
     OperationType type;
-    std::string value;
 };
+
+inline std::unique_ptr<ICommand> createOperationCommand(OperationPanel* scene, OperationType type) {
+    return std::unique_ptr<ICommand>(new OperationCommand(scene, type));
+}
+
+inline std::unique_ptr<ICommand> createInsertCommand(OperationPanel* scene) {
+    return createOperationCommand(scene, OperationType::INSERT);
+}
+
+inline std::unique_ptr<ICommand> createSearchCommand(OperationPanel* scene) {
+    return createOperationCommand(scene, OperationType::SEARCH);
+}
+
+inline std::unique_ptr<ICommand> createDeleteCommand(OperationPanel* scene) {
+    return createOperationCommand(scene, OperationType::DELETE);
+}
+
+inline std::unique_ptr<ICommand> createUpdateCommand(OperationPanel* scene) {
+    return createOperationCommand(scene, OperationType::UPDATE);
+}

@@ -1,21 +1,10 @@
 #include "OperationCommand.h"
-#include "VisualizationScene.h"
+#include "OperationPanel.h"
 
-OperationCommand::OperationCommand(VisualizationScene* scene, OperationType type, const std::string& value)
-    : scene(scene), type(type), value(value) {}
+OperationCommand::OperationCommand(OperationPanel* panel, OperationType type)
+    : panel(panel), type(type) {}
 
 void OperationCommand::execute() {
-    if (!scene) return;
-    
-    switch (type) {
-        case OperationType::INSERT:
-            scene->onInsert(value);
-            break;
-        case OperationType::SEARCH:
-            scene->onSearch(value);
-            break;
-        case OperationType::DELETE:
-            scene->onDelete(value);
-            break;
-    }
+    if (!panel) return;
+    panel->get(type);    
 }

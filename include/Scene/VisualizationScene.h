@@ -3,6 +3,7 @@
 #include "Button.h"
 #include "BaseVisualizer.h"
 #include "SceneManager.h"
+#include "OperationPanel.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
@@ -27,12 +28,12 @@ public:
     virtual void onDelete(const std::string& value) = 0;
     virtual void onUpdate(const std::string& key, const std::string& value) = 0;
 
-protected:
-    SceneManager& manager;
-    BaseVisualizer* visualizer;
-    sf::Text statusText;
-    std::unique_ptr<UI::Button> backButton;
-
     // Helper method for child classes to override
     virtual std::string getSceneTitle() const = 0;
+
+protected:
+    SceneManager& manager;
+    sf::Text statusText;
+    std::unique_ptr<UI::Button> backButton;
+    std::unique_ptr<OperationPanel> operationPanel;
 };
