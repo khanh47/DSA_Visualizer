@@ -4,6 +4,7 @@
 
 TreeScene::TreeScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
+    initializeOperationPanel();
     // TODO: Initialize Tree-specific visualization
     // TODO: Create TreeVisualizer and set it via setVisualizer()
 }

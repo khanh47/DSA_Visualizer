@@ -4,6 +4,7 @@
 
 LinkedListScene::LinkedListScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
+    initializeOperationPanel();
     // TODO: Initialize LinkedList-specific visualization
     // TODO: Create LinkedListVisualizer and set it via setVisualizer()
 }

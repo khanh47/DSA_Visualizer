@@ -4,6 +4,7 @@
 
 HashTableScene::HashTableScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
+    initializeOperationPanel();
     // TODO: Initialize HashTable-specific visualization
     // TODO: Create HashTableVisualizer and set it via setVisualizer()
 }

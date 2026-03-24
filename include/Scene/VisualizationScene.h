@@ -22,16 +22,31 @@ public:
     void update(float deltaTime) override;
     void render(sf::RenderWindow& window) override;
 
-    // Hook methods for child classes to implement
-    virtual void onInsert(const std::string& value) = 0;
-    virtual void onSearch(const std::string& value) = 0;
-    virtual void onDelete(const std::string& value) = 0;
-    virtual void onUpdate(const std::string& key, const std::string& value) = 0;
+    // Generic hooks with default no-op behavior.
+    virtual void onInsert(const std::string& value) { (void)value; }
+    virtual void onSearch(const std::string& value) { (void)value; }
+    virtual void onDelete(const std::string& value) { (void)value; }
+    virtual void onUpdate(const std::string& key, const std::string& value) {
+        (void)key;
+        (void)value;
+    }
+
+    // Graph-specific hooks with default no-op behavior.
+    virtual void onRandom(const std::string& value) { (void)value; }
+    virtual void onRun(const std::string& algorithm) { (void)algorithm; }
+    virtual void onVertex(const std::string& value) { (void)value; }
+    virtual void onEdge(const std::string& from, const std::string& to, const std::string& cost) {
+        (void)from;
+        (void)to;
+        (void)cost;
+    }
 
     // Helper method for child classes to override
     virtual std::string getSceneTitle() const = 0;
 
 protected:
+    void initializeOperationPanel();
+
     SceneManager& manager;
     sf::Text statusText;
     std::unique_ptr<UI::Button> backButton;
