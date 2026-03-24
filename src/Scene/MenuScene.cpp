@@ -18,12 +18,12 @@ MenuScene::MenuScene(SceneManager& sceneManager) : manager(sceneManager) {
     const float centeredY = (windowHeight - buttonSize.y) / 2.0f;
 
     btnMenu->setLayoutProperties(
-        {centeredX, centeredY},
-        buttonSize,
-        spacing,
-        true,
-        sf::Color(100, 149, 237),
-        28
+        {centeredX, centeredY}, // start position
+        buttonSize, // button size
+        spacing, // spacing between button
+        true, // is horizontal
+        sf::Color(100, 149, 237), // color of the button
+        28 // size of text
     );
 
     btnMenu->addButtonAuto("Linked List", createLinkedListSceneCommand(manager));

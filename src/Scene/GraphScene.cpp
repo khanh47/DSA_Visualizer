@@ -1,31 +1,68 @@
 #include "GraphScene.h"
 #include "ResourceManager.h"
+#include <algorithm>
+#include <cctype>
 #include <iostream>
+
+namespace {
+bool isPositiveInteger(const std::string& value) {
+    if (value.empty()) {
+        return false;
+    }
+
+    return std::all_of(value.begin(), value.end(), [](unsigned char ch) {
+        return std::isdigit(ch) != 0;
+    });
+}
+
+std::string toLowerCopy(std::string value) {
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::tolower(ch));
+    });
+    return value;
+}
+} // namespace
 
 GraphScene::GraphScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
-    // TODO: Initialize graph-specific visualization
-    // TODO: Create GraphVisualizer and set it via setVisualizer()
+    initializeOperationPanel();
 }
 
-void GraphScene::onInsert(const std::string& value) {
-    // TODO: Insert value into graph structure
-    displayStatus("Inserted: " + value);
+void GraphScene::onVertex(const std::string& value) {
+    if (value.empty()) {
+        displayStatus("Vertex name is required.");
+        return;
+    }
+
+    displayStatus("Added vertex: " + value);
 }
 
-void GraphScene::onSearch(const std::string& value) {
-    // TODO: Search for value in graph structure
-    displayStatus("Searching: " + value);
+void GraphScene::onEdge(const std::string& from, const std::string& to, const std::string& cost) {
+    if (from.empty() || to.empty() || cost.empty()) {
+        displayStatus("Edge requires vertex1, vertex2 and cost.");
+        return;
+    }
+
+    displayStatus("Added edge: " + from + " - " + to + " (cost " + cost + ")");
 }
 
-void GraphScene::onDelete(const std::string& value) {
-    // TODO: Delete value from graph structure
-    displayStatus("Deleted: " + value);
+void GraphScene::onRandom(const std::string& value) {
+    if (!isPositiveInteger(value)) {
+        displayStatus("Random requires a positive node count.");
+        return;
+    }
+
+    displayStatus("Random graph with " + value + " nodes.");
 }
 
-void GraphScene::onUpdate(const std::string& key, const std::string& value) {
-    // TODO: Update graph with given mode (e.g., BFS, DFS)
-    displayStatus("Updating " + key + " with: " + value);
+void GraphScene::onRun(const std::string& algorithmValue) {
+    const std::string algorithm = toLowerCopy(algorithmValue);
+    if (algorithm != "prim" && algorithm != "kruskal") {
+        displayStatus("Choose algorithm: prim or kruskal.");
+        return;
+    }
+
+    displayStatus("Running " + algorithm + " algorithm.");
 }
 
 std::string GraphScene::getSceneTitle() const {

@@ -7,11 +7,10 @@ public:
     GraphScene(SceneManager& sceneManager);
     virtual ~GraphScene() = default;
 
-    // Hook methods from VisualizationScene
-    void onInsert(const std::string& value) override;
-    void onSearch(const std::string& value) override;
-    void onDelete(const std::string& value) override;
-    void onUpdate(const std::string& key, const std::string& value) override;
+    void onRandom(const std::string& value) override;
+    void onRun(const std::string& algorithm) override;
+    void onVertex(const std::string& value) override;
+    void onEdge(const std::string& from, const std::string& to, const std::string& cost) override;
 
 protected:
     std::string getSceneTitle() const override;
