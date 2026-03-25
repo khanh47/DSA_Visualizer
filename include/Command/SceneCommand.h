@@ -43,25 +43,25 @@ inline std::unique_ptr<SceneCommand> createHashTableSceneCommand(SceneManager& m
     ));
 }
 
-inline std::unique_ptr<SceneCommand> createTreeSceneCommand(SceneManager& manager) {
+inline std::unique_ptr<SceneCommand> createTrieSceneCommand(SceneManager& manager) {
     return std::unique_ptr<SceneCommand>(new SceneCommand(
         manager,
         [](SceneManager& mgr) -> std::unique_ptr<BaseScene> {
-            extern std::unique_ptr<BaseScene> createTreeSceneFactory(SceneManager&);
-            return createTreeSceneFactory(mgr);
+            extern std::unique_ptr<BaseScene> createTrieSceneFactory(SceneManager&);
+            return createTrieSceneFactory(mgr);
         },
-        "Push Tree Scene"
+        "Push Trie Scene"
     ));
 }
 
-inline std::unique_ptr<SceneCommand> createGraphSceneCommand(SceneManager& manager) {
+inline std::unique_ptr<SceneCommand> createKruskalSceneCommand(SceneManager& manager) {
     return std::unique_ptr<SceneCommand>(new SceneCommand(
         manager,
         [](SceneManager& mgr) -> std::unique_ptr<BaseScene> {
-            extern std::unique_ptr<BaseScene> createGraphSceneFactory(SceneManager&);
-            return createGraphSceneFactory(mgr);
+            extern std::unique_ptr<BaseScene> createKruskalSceneFactory(SceneManager&);
+            return createKruskalSceneFactory(mgr);
         },
-        "Push Graph Scene"
+        "Push Kruskal Scene"
     ));
 }
 

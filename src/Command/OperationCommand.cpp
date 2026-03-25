@@ -1,56 +1,39 @@
 #include "OperationCommand.h"
-#include "OperationPanel.h"
+#include "OperationMenu.h"
 #include "VisualizationScene.h"
 
-OperationCommand::OperationCommand(OperationPanel* panel, OperationType type)
-    : panel(panel), type(type) {}
+OperationCommand::OperationCommand(VisualizationScene* scene, OperationMenu* menu, OperationType type)
+    : scene(scene), menu(menu), type(type) {}
 
 void OperationCommand::execute() {
-    if (!panel) return;
-    panel->get(type);
-}
-
-RunCommand::RunCommand(VisualizationScene* scene, OperationPanel* panel, OperationType type)
-    : scene(scene), panel(panel), type(type) {}
-
-void RunCommand::execute() {
     if (!scene) {
         return;
     }
 
-    const std::string value = panel ? panel->getInputValue(0) : "";
-
     switch (type) {
         case OperationType::INSERT:
-            scene->onInsert(value);
-            break;
-        case OperationType::SEARCH:
-            scene->onSearch(value);
+            scene->onInsert(menu ? menu->getInputValue(0) : "");
             break;
         case OperationType::DELETE:
-            scene->onDelete(value);
+            scene->onDelete(menu ? menu->getInputValue(1) : "");
             break;
-        case OperationType::UPDATE: {
-            const std::string newValue = panel ? panel->getInputValue(1) : "";
-            scene->onUpdate(value, newValue);
+        case OperationType::SEARCH:
+            scene->onSearch(menu ? menu->getInputValue(2) : "");
             break;
-        }
+        case OperationType::UPDATE:
+            scene->onUpdate(
+                menu ? menu->getInputValue(3) : "",
+                menu ? menu->getInputValue(4) : ""
+            );
+            break;
         case OperationType::RANDOM:
-            scene->onRandom(value);
+            scene->onRandom();
             break;
-        case OperationType::RUN: {
-            const std::string algorithm = panel ? panel->getRunAlgorithm() : "prim";
-            scene->onRun(algorithm);
+        case OperationType::RUN:
+            scene->onRun();
             break;
-        }
-        case OperationType::VERTEX:
-            scene->onVertex(value);
+        case OperationType::RESET:
+            scene->onReset();
             break;
-        case OperationType::EDGE: {
-            const std::string vertex2 = panel ? panel->getInputValue(1) : "";
-            const std::string cost = panel ? panel->getInputValue(2) : "";
-            scene->onEdge(value, vertex2, cost);
-            break;
-        }
     }
 }

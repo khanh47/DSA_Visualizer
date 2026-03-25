@@ -1,8 +1,8 @@
 #include "SceneCommand.h"
 #include "LinkedListScene.h"
 #include "HashTableScene.h"
-#include "TreeScene.h"
-#include "GraphScene.h"
+#include "TrieScene.h"
+#include "KruskalScene.h"
 #include <iostream>
 
 SceneCommand::SceneCommand(SceneManager& manager, SceneFactory factory, const std::string& commandName)
@@ -27,10 +27,10 @@ std::unique_ptr<BaseScene> createHashTableSceneFactory(SceneManager& manager) {
     return std::make_unique<HashTableScene>(manager);
 }
 
-std::unique_ptr<BaseScene> createTreeSceneFactory(SceneManager& manager) {
-    return std::make_unique<TreeScene>(manager);
+std::unique_ptr<BaseScene> createTrieSceneFactory(SceneManager& manager) {
+    return std::make_unique<TrieScene>(manager);
 }
 
-std::unique_ptr<BaseScene> createGraphSceneFactory(SceneManager& manager) {
-    return std::make_unique<GraphScene>(manager);
+std::unique_ptr<BaseScene> createKruskalSceneFactory(SceneManager& manager) {
+    return std::make_unique<KruskalScene>(manager);
 }

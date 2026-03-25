@@ -3,7 +3,8 @@
 #include "Button.h"
 #include "BaseVisualizer.h"
 #include "SceneManager.h"
-#include "OperationPanel.h"
+#include "OperationMenu.h"
+#include "PlaybackControlWidget.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
@@ -31,24 +32,30 @@ public:
         (void)value;
     }
 
-    // Graph-specific hooks with default no-op behavior.
-    virtual void onRandom(const std::string& value) { (void)value; }
-    virtual void onRun(const std::string& algorithm) { (void)algorithm; }
-    virtual void onVertex(const std::string& value) { (void)value; }
-    virtual void onEdge(const std::string& from, const std::string& to, const std::string& cost) {
-        (void)from;
-        (void)to;
-        (void)cost;
-    }
+    // Kruskal-specific hooks with default no-op behavior.
+    virtual void onRandom() {};
+    virtual void onRun() {};
+
+    virtual void onReset() {};
+
+    // Playback hooks for the bottom control bar.
+    virtual void onPlaybackSpeedChanged(float speed) { (void)speed; }
+    virtual void onTogglePlaybackMode(bool autoRun) { (void)autoRun; }
+    virtual void onGoToFirstStep() {}
+    virtual void onGoToPreviousStep() {}
+    virtual void onGoToNextStep() {}
+    virtual void onGoToFinalStep() {}
 
     // Helper method for child classes to override
     virtual std::string getSceneTitle() const = 0;
 
 protected:
-    void initializeOperationPanel();
+    void initializeOperationMenu();
 
     SceneManager& manager;
     sf::Text statusText;
     std::unique_ptr<UI::Button> backButton;
-    std::unique_ptr<OperationPanel> operationPanel;
+    std::unique_ptr<OperationMenu> operationMenu;
+    std::unique_ptr<BaseVisualizer> visualizer;
+    std::unique_ptr<UI::PlaybackControlWidget> playbackWidget;
 };
