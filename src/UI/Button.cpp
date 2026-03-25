@@ -24,6 +24,18 @@ void Button::setCommand(std::unique_ptr<ICommand> command) {
     buttonCommand = std::move(command);
 }
 
+void Button::setPosition(const sf::Vector2f& position) {
+    shape.setPosition(position);
+    const sf::Vector2f size = shape.getSize();
+    label.setPosition({position.x + size.x / 2.0f, position.y + size.y / 2.0f});
+}
+
+void Button::setSize(const sf::Vector2f& size) {
+    shape.setSize(size);
+    const sf::Vector2f position = shape.getPosition();
+    label.setPosition({position.x + size.x / 2.0f, position.y + size.y / 2.0f});
+}
+
 void Button::processEvent(const sf::Event& event) {
     if (const auto* mouseEvent = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseEvent->button == sf::Mouse::Button::Left) {

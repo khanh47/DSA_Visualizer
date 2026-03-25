@@ -2,16 +2,13 @@
 #include "VisualizationScene.h"
 #include <SFML/Graphics.hpp>
 
-class HashTableScene : public VisualizationScene {
+class KruskalScene : public VisualizationScene {
 public:
-    HashTableScene(SceneManager& sceneManager);
-    virtual ~HashTableScene() = default;
+    KruskalScene(SceneManager& sceneManager);
+    virtual ~KruskalScene() = default;
 
-    // Hook methods from VisualizationScene
-    void onInsert(const std::string& value) override;
-    void onSearch(const std::string& value) override;
-    void onDelete(const std::string& value) override;
-    void onUpdate(const std::string& key, const std::string& value) override;
+    void onRandom() override;
+    void onRun() override;
     void onReset() override;
     void onPlaybackSpeedChanged(float speed) override;
     void onTogglePlaybackMode(bool autoRun) override;

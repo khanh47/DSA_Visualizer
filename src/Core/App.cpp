@@ -1,7 +1,7 @@
 #include "App.h"
 #include "MenuScene.h"
 
-App::App() : window(sf::VideoMode({1920, 1080}), "DSA Visualizer") {
+App::App() : window(sf::VideoMode({1600, 900}), "DSA Visualizer") {
     manager = std::make_unique<SceneManager>();
     window.setFramerateLimit(60);
     manager->pushScene(std::make_unique<MenuScene>(*manager));

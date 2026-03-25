@@ -14,11 +14,10 @@ TextBox::TextBox(const sf::Vector2f& position,
       maxChars(maxChars) {
     box.setPosition(position);
     box.setSize(size);
-    box.setFillColor(sf::Color(58, 66, 88));
+    box.setFillColor(sf::Color::White);
     box.setOutlineThickness(2.0f);
     box.setOutlineColor(sf::Color(120, 150, 230));
 
-    textDrawable.setPosition({position.x + 12.0f, position.y + 8.0f});
     refreshDisplay();
 }
 
@@ -34,13 +33,6 @@ void TextBox::processEvent(const sf::Event& event) {
 
     if (!focused) {
         return;
-    }
-
-    if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
-        if (keyEvent->code == sf::Keyboard::Key::Backspace && !text.empty()) {
-            text.pop_back();
-            refreshDisplay();
-        }
     }
 
     if (const auto* textEvent = event.getIf<sf::Event::TextEntered>()) {
@@ -86,11 +78,19 @@ void TextBox::setDescription(const std::string& value) {
 void TextBox::refreshDisplay() {
     if (text.empty()) {
         textDrawable.setString(description);
-        textDrawable.setFillColor(sf::Color(170, 178, 196));
+        textDrawable.setFillColor(sf::Color(150, 150, 150));
     } else {
         textDrawable.setString(text);
-        textDrawable.setFillColor(sf::Color::White);
+        textDrawable.setFillColor(sf::Color(25, 25, 25));
     }
+
+    const sf::FloatRect bounds = textDrawable.getLocalBounds();
+    textDrawable.setOrigin({bounds.position.x + bounds.size.x / 2.0f,
+                            bounds.position.y + bounds.size.y / 2.0f});
+
+    const sf::Vector2f pos = box.getPosition();
+    const sf::Vector2f size = box.getSize();
+    textDrawable.setPosition({pos.x + size.x / 2.0f, pos.y + size.y / 2.0f});
 }
 
 } // namespace UI

@@ -14,6 +14,16 @@ void ButtonMenu::setLayoutProperties(const sf::Vector2f& startPosition,
     _layout.horizontal = horizontal;
     _layout.defaultColor = defaultColor;
     _layout.defaultCharSize = defaultCharSize;
+
+    for (std::size_t i = 0; i < _buttonMenu.size(); ++i) {
+        const float offset = static_cast<float>(i) * _layout.spacing;
+        const sf::Vector2f position = _layout.horizontal
+            ? sf::Vector2f(_layout.startPosition.x + offset, _layout.startPosition.y)
+            : sf::Vector2f(_layout.startPosition.x, _layout.startPosition.y + offset);
+
+        _buttonMenu[i]->setSize(_layout.buttonSize);
+        _buttonMenu[i]->setPosition(position);
+    }
 }
 
 void ButtonMenu::addButton(const std::shared_ptr<Button>& button) {

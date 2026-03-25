@@ -2,7 +2,6 @@
 #include "ResourceManager.h"
 #include "OperationCommand.h"
 #include "SceneCommand.h"
-#include <iostream>
 
 VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     : manager(sceneManager),
@@ -13,17 +12,38 @@ VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     statusText.setCharacterSize(28);
     statusText.setFillColor(sf::Color(30, 30, 30));
     statusText.setStyle(sf::Text::Bold);
-    backButton = std::unique_ptr<UI::Button>(new UI::Button({20.0f, 20.0f}, {220.0f, 60.0f}, sf::Color(100, 149, 237), "Back to menu", 28));
+    backButton = std::unique_ptr<UI::Button>(new UI::Button({16.0f, 20.0f}, {36.0f, 36.0f}, sf::Color(18, 40, 78), "<", 30));
     backButton->setCommand(createPopSceneCommand(manager));
+
+    playbackWidget = std::make_unique<UI::PlaybackControlWidget>();
+    playbackWidget->setOnSpeedChanged([this](float speed) {
+        onPlaybackSpeedChanged(speed);
+    });
+    playbackWidget->setOnModeToggled([this](bool autoRun) {
+        onTogglePlaybackMode(autoRun);
+    });
+    playbackWidget->setOnFirstStep([this]() {
+        onGoToFirstStep();
+    });
+    playbackWidget->setOnPreviousStep([this]() {
+        onGoToPreviousStep();
+    });
+    playbackWidget->setOnNextStep([this]() {
+        onGoToNextStep();
+    });
+    playbackWidget->setOnFinalStep([this]() {
+        onGoToFinalStep();
+    });
 }
 
-void VisualizationScene::initializeOperationPanel() {
-    if (!operationPanel) {
-        operationPanel = std::make_unique<OperationPanel>(*this);
+void VisualizationScene::initializeOperationMenu() {
+    if (!operationMenu) {
+        operationMenu = std::make_unique<OperationMenu>(*this);
     }
 }
 
 void VisualizationScene::setVisualizer(BaseVisualizer* viz) {
+    visualizer.reset(viz);
 }
 
 void VisualizationScene::displayStatus(const std::string& message) {
@@ -31,8 +51,16 @@ void VisualizationScene::displayStatus(const std::string& message) {
 }
 
 void VisualizationScene::processEvents(const sf::Event& event) {
-    if (operationPanel) {
-        operationPanel->processEvents(event);
+    if (visualizer) {
+        visualizer->processEvents(event);
+    }
+
+    if (operationMenu) {
+        operationMenu->processEvents(event);
+    }
+
+    if (playbackWidget) {
+        playbackWidget->processEvent(event);
     }
 
     // Process back button last because it can pop (destroy) this scene.
@@ -40,21 +68,45 @@ void VisualizationScene::processEvents(const sf::Event& event) {
 }
 
 void VisualizationScene::update(float deltaTime) {
+    if (visualizer) {
+        visualizer->update(deltaTime);
+    }
 }
 
 void VisualizationScene::render(sf::RenderWindow& window) {
-    backButton->render(window);
-    if (operationPanel) {
-        operationPanel->render(window);
+    if (playbackWidget) {
+        playbackWidget->layout(window.getSize());
     }
 
-    // text to recognize each scene (can delete later)
+    if (visualizer) {
+        visualizer->render(window);
+    }
+
+    sf::RectangleShape topBar;
+    topBar.setPosition({0.0f, 0.0f});
+    topBar.setSize({static_cast<float>(window.getSize().x), 150.0f});
+    topBar.setFillColor(sf::Color(8, 28, 62));
+    window.draw(topBar);
+
+    sf::RectangleShape titleDivider;
+    titleDivider.setPosition({0.0f, 75.0f});
+    titleDivider.setSize({static_cast<float>(window.getSize().x), 1.0f});
+    titleDivider.setFillColor(sf::Color(140, 165, 205));
+    window.draw(titleDivider);
+
+    backButton->render(window);
+    if (operationMenu) {
+        operationMenu->render(window);
+    }
+
+    if (playbackWidget) {
+        playbackWidget->render(window);
+    }
+
     sf::Font &font = ResourceManager::getInstance().getFont("Roboto");
-    sf::Text label(font, getSceneTitle(), 30);
-    label.setFillColor(sf::Color::Red);
-    const sf::FloatRect bounds = label.getLocalBounds();
-    label.setOrigin({bounds.position.x + bounds.size.x / 2.0f, bounds.position.y});
-    label.setPosition({window.getSize().x / 2.0f, 20.0f});
+    sf::Text label(font, getSceneTitle(), 36);
+    label.setFillColor(sf::Color::White);
+    label.setPosition({72.0f, 12.0f});
 
     window.draw(label);
     window.draw(statusText);
