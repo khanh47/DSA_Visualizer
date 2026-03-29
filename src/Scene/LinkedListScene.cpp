@@ -19,11 +19,9 @@ void LinkedListScene::onInsert(const std::string& value) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
                 llVisualizer->insertValue(val);
-                displayStatus("Inserted: " + value);
             }
         }
     } catch (const std::exception& e) {
-        displayStatus("Error: Invalid input");
     }
 }
 
@@ -46,7 +44,6 @@ void LinkedListScene::onReset() {
     if (visualizer) {
         visualizer->reset();
     }
-    displayStatus("Linked list reset.");
 }
 
 void LinkedListScene::onPlaybackSpeedChanged(float speed) {
@@ -66,28 +63,24 @@ void LinkedListScene::onGoToFirstStep() {
     if (visualizer) {
         visualizer->goToFirstStep();
     }
-    displayStatus("Go to first step.");
 }
 
 void LinkedListScene::onGoToPreviousStep() {
     if (visualizer) {
         visualizer->goToPreviousStep();
     }
-    displayStatus("Go to previous step.");
 }
 
 void LinkedListScene::onGoToNextStep() {
     if (visualizer) {
         visualizer->goToNextStep();
     }
-    displayStatus("Go to next step.");
 }
 
 void LinkedListScene::onGoToFinalStep() {
     if (visualizer) {
         visualizer->goToFinalStep();
     }
-    displayStatus("Go to final step.");
 }
 
 std::string LinkedListScene::getSceneTitle() const {
