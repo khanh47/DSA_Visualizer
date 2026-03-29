@@ -23,7 +23,7 @@ Trie::~Trie() {
     delete root;
 }
 
-void Trie::insert(const std::string& word) {
+void Trie::insert(const string& word) {
     TrieNode* current = root;
     for (char ch : word) {
         unsigned char index = static_cast<unsigned char>(ch);
@@ -35,7 +35,7 @@ void Trie::insert(const std::string& word) {
     current->isEndOfWord = true;
 }
 
-bool Trie::search(const std::string& word) const {
+bool Trie::search(const string& word) const {
     TrieNode* current = root;
     for (char ch : word) {
         unsigned char index = static_cast<unsigned char>(ch);
@@ -47,7 +47,7 @@ bool Trie::search(const std::string& word) const {
     return current != nullptr && current->isEndOfWord;
 }
 
-bool Trie::deleteHelper(TrieNode* current, const std::string& word, int index) {
+bool Trie::deleteHelper(TrieNode* current, const string& word, int index) {
     if (index == word.length()) {
         if (!current->isEndOfWord) {
             return false;
@@ -88,11 +88,11 @@ bool Trie::deleteHelper(TrieNode* current, const std::string& word, int index) {
     return false;
 }
 
-void Trie::remove(const std::string& word) {
+void Trie::remove(const string& word) {
     deleteHelper(root, word, 0);
 }
 
-void Trie::update(const std::string& oldWord, const std::string& newWord) {
+void Trie::update(const string& oldWord, const string& newWord) {
     if (search(oldWord)) {
         remove(oldWord);
         insert(newWord);
