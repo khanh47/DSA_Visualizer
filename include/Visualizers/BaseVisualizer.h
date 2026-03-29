@@ -18,4 +18,17 @@ public:
     virtual void goToPreviousStep() {}
     virtual void goToNextStep() {}
     virtual void goToFinalStep() {}
+
+    // Zoom and pan helpers
+    float getZoomLevel() const { return zoomLevel; }
+    sf::Vector2f getPanOffset() const { return panOffset; }
+    void resetZoomPan() { zoomLevel = 1.0f; panOffset = {0.0f, 0.0f}; }
+
+protected:
+    float zoomLevel = 1.0f;
+    sf::Vector2f panOffset = {0.0f, 0.0f};
+    bool isDragging = false;
+    sf::Vector2f lastMousePos = {0.0f, 0.0f};
+
+    void handleZoomPanEvents(const sf::Event& event);
 };

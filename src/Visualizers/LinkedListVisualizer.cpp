@@ -2,6 +2,7 @@
 #include "ResourceManager.h"
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 LinkedListVisualizer::LinkedListVisualizer() {
     font = &ResourceManager::getInstance().getFont("Roboto");
@@ -60,10 +61,23 @@ void LinkedListVisualizer::updateVisualization(float windowWidth, float windowHe
         auto node = std::make_unique<UI::VisualNode>(
             *font, 
             std::to_string(currentState.nodeValues[i]), 
-            nodeRadius
+            nodeRadius * zoomLevel
         );
 
-        sf::Vector2f position(startX + i * spacing, startY);
+        // Calculate base position
+        float posX = startX + i * spacing;
+        float posY = startY;
+        
+        // Center zoom around screen center
+        float centerX = windowWidth / 2.0f;
+        float centerY = windowHeight / 2.0f;
+        
+        // Apply zoom transformation
+        float zoomedX = centerX + (posX - centerX) * zoomLevel;
+        float zoomedY = centerY + (posY - centerY) * zoomLevel;
+        
+        // Apply pan
+        sf::Vector2f position(zoomedX + panOffset.x, zoomedY + panOffset.y);
         node->setPosition(position);
         nodePositions.push_back(position);
 
@@ -164,7 +178,7 @@ const LinkedList& LinkedListVisualizer::list() const {
 }
 
 void LinkedListVisualizer::processEvents(const sf::Event& event) {
-    (void)event;
+    handleZoomPanEvents(event);
 }
 
 void LinkedListVisualizer::update(float deltaTime) {

@@ -45,6 +45,7 @@ const KruskalDataStructure& KruskalVisualizer::data() const {
 }
 
 void KruskalVisualizer::processEvents(const sf::Event& event) {
+    handleZoomPanEvents(event);
 }
 
 void KruskalVisualizer::update(float deltaTime) {
