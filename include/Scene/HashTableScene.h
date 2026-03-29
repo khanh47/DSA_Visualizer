@@ -1,18 +1,27 @@
 #pragma once
 #include "VisualizationScene.h"
-#include <SFML/Graphics.hpp>
+#include "HashTableVisualizer.h"
+#include "SelectBox.h"
+#include <memory>
 
 class HashTableScene : public VisualizationScene {
+private:
+    std::unique_ptr<UI::SelectBox> modeSelectBox;
+    HashTableVisualizer* getHashVisualizer();
+
 public:
     HashTableScene(SceneManager& sceneManager);
-    virtual ~HashTableScene() = default;
 
-    // Hook methods from VisualizationScene
+    void processEvents(const sf::Event& event) override;
+    void render(sf::RenderWindow& window) override;
+
     void onInsert(const std::string& value) override;
     void onSearch(const std::string& value) override;
     void onDelete(const std::string& value) override;
     void onUpdate(const std::string& key, const std::string& value) override;
     void onReset() override;
+    
+    // Playback functions
     void onPlaybackSpeedChanged(float speed) override;
     void onTogglePlaybackMode(bool autoRun) override;
     void onGoToFirstStep() override;
@@ -20,6 +29,5 @@ public:
     void onGoToNextStep() override;
     void onGoToFinalStep() override;
 
-protected:
     std::string getSceneTitle() const override;
 };
