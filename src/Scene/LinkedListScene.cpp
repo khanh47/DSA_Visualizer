@@ -1,17 +1,30 @@
 #include "LinkedListScene.h"
+#include "LinkedListVisualizer.h"
 #include "ResourceManager.h"
 #include <iostream>
 
 LinkedListScene::LinkedListScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
     initializeOperationMenu();
-    // TODO: Initialize LinkedList-specific visualization
-    // TODO: Create LinkedListVisualizer and set it via setVisualizer()
+    
+    // Create and set the LinkedList visualizer
+    auto linkedListVisualizer = std::make_unique<LinkedListVisualizer>();
+    visualizer = std::move(linkedListVisualizer);
 }
 
 void LinkedListScene::onInsert(const std::string& value) {
-    // TODO: Insert value into LinkedList structure
-    displayStatus("Inserted: " + value);
+    try {
+        int val = std::stoi(value);
+        if (visualizer) {
+            auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
+            if (llVisualizer) {
+                llVisualizer->insertValue(val);
+                displayStatus("Inserted: " + value);
+            }
+        }
+    } catch (const std::exception& e) {
+        displayStatus("Error: Invalid input");
+    }
 }
 
 void LinkedListScene::onSearch(const std::string& value) {

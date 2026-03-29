@@ -17,5 +17,5 @@ public:
     void remove(int value);
     void update(int oldVal, int newVal);
 
-    Node* getHead();
+    Node* getHead() const;
 };
