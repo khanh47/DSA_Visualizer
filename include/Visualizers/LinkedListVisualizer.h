@@ -45,9 +45,10 @@ private:
     float elapsedTime = 0.0f;
 
     std::vector<std::unique_ptr<UI::VisualNode>> visualNodes;
+    std::vector<sf::Vector2f> nodePositions; // Store node positions for drawing arrows
     sf::Font* font = nullptr;
 
-    void updateVisualization();
+    void updateVisualization(float windowWidth = 800.0f, float windowHeight = 600.0f);
     std::vector<int> listToVector() const;
     void recordStep(int highlightedIndex, const std::string& description);
 };

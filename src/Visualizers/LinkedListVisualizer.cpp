@@ -1,15 +1,17 @@
 #include "LinkedListVisualizer.h"
 #include "ResourceManager.h"
 #include <sstream>
+#include <cmath>
 
 LinkedListVisualizer::LinkedListVisualizer() {
     font = &ResourceManager::getInstance().getFont("Roboto");
 }
 
 void LinkedListVisualizer::insertValue(int value) {
-    // Record initial state before insert
+    // Clear only steps for new animation, keep the linked list data
     steps.clear();
     currentStep = 0;
+    nodePositions.clear();
 
     Node* cur = linkedList.getHead();
     int index = 0;
@@ -31,28 +33,39 @@ void LinkedListVisualizer::insertValue(int value) {
 
     // Record final state
     recordStep(index + 1, "Inserted " + std::to_string(value));
+    
+    // Auto-move to final step to show result immediately
+    currentStep = steps.size() - 1;
 }
 
-void LinkedListVisualizer::updateVisualization() {
+void LinkedListVisualizer::updateVisualization(float windowWidth, float windowHeight) {
     visualNodes.clear();
+    nodePositions.clear();
     
     if (steps.empty() || !font) return;
 
     const InsertStep& currentState = steps[currentStep];
     
-    const float startX = 50.0f;
-    const float startY = 200.0f;
     const float spacing = 80.0f;
+    const float nodeRadius = 28.0f;
+    
+    // Calculate total width needed for all nodes
+    float totalWidth = currentState.nodeValues.size() * spacing;
+    
+    // Start position centered horizontally
+    float startX = (windowWidth - totalWidth) / 2.0f + nodeRadius;
+    float startY = windowHeight / 2.0f; // Center vertically
 
     for (size_t i = 0; i < currentState.nodeValues.size(); ++i) {
         auto node = std::make_unique<UI::VisualNode>(
             *font, 
             std::to_string(currentState.nodeValues[i]), 
-            28.0f
+            nodeRadius
         );
 
         sf::Vector2f position(startX + i * spacing, startY);
         node->setPosition(position);
+        nodePositions.push_back(position);
 
         // Highlight the current node being processed
         if (static_cast<int>(i) == currentState.highlightedIndex) {
@@ -166,27 +179,28 @@ void LinkedListVisualizer::update(float deltaTime) {
 }
 
 void LinkedListVisualizer::render(sf::RenderWindow& window) {
-    updateVisualization();
+    // Get window size for centering
+    sf::Vector2u windowSize = window.getSize();
+    float windowWidth = static_cast<float>(windowSize.x);
+    float windowHeight = static_cast<float>(windowSize.y);
+    
+    updateVisualization(windowWidth, windowHeight);
+
+    // Draw arrows between nodes
+    for (size_t i = 0; i + 1 < nodePositions.size(); ++i) {
+        sf::Vector2f start = nodePositions[i];
+        sf::Vector2f end = nodePositions[i + 1];
+        
+        // Create line connecting nodes
+        sf::Vertex line[] = {
+            sf::Vertex(start, sf::Color(150, 150, 150)),
+            sf::Vertex(end, sf::Color(150, 150, 150))
+        };
+        window.draw(line, 2, sf::PrimitiveType::Lines);
+    }
 
     // Render nodes
     for (auto& node : visualNodes) {
         node->render(window);
-    }
-
-    // Render description text
-    if (currentStep < static_cast<int>(steps.size()) && font) {
-        sf::Text descText(*font, steps[currentStep].description, 16);
-        descText.setFillColor(sf::Color::White);
-        descText.setPosition({50.0f, 100.0f});
-        window.draw(descText);
-    }
-
-    // Render step counter
-    if (font) {
-        sf::Text stepCounterText(*font, "Step: " + std::to_string(currentStep + 1) + "/" + 
-                                  std::to_string(steps.size()), 14);
-        stepCounterText.setFillColor(sf::Color(200, 200, 200));
-        stepCounterText.setPosition({50.0f, 320.0f});
-        window.draw(stepCounterText);
     }
 }
