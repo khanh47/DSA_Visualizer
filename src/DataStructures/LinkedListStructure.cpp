@@ -2,6 +2,10 @@
 
 LinkedList::LinkedList() : head(nullptr) {}
 
+Node* LinkedList::getHead() const {
+    return head;
+}
+
 void LinkedList::insert(int value) {
     Node* newNode = new Node{value, nullptr};
     if (!head) {
