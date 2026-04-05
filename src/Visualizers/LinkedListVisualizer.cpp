@@ -85,7 +85,7 @@ void LinkedListVisualizer::updateVisualization(float windowWidth, float windowHe
         if (static_cast<int>(i) == currentState.highlightedIndex) {
             node->setFillColor(sf::Color(255, 165, 0)); // Orange for highlighted
         } else {
-            node->setFillColor(sf::Color::White); // Default blue
+            node->setFillColor(sf::Color(135, 206, 235)); // Light blue
         }
 
         visualNodes.push_back(std::move(node));
@@ -217,4 +217,47 @@ void LinkedListVisualizer::render(sf::RenderWindow& window) {
     for (auto& node : visualNodes) {
         node->render(window);
     }
+}
+void LinkedListVisualizer::deleteValue(int value) {
+    // Clear previous animation state
+    steps.clear();
+    currentStep = 0;
+    nodePositions.clear();
+
+    // First, record the initial state before deletion
+    recordStep(-1, "Searching for value " + std::to_string(value));
+
+    // Find the node to delete and track its index
+    Node* cur = linkedList.getHead();
+    int targetIndex = -1;
+    int index = 0;
+
+    // Search for the value in the list
+    while (cur) {
+        if (cur->value == value) {
+            targetIndex = index;
+            break;
+        }
+        cur = cur->next;
+        index++;
+    }
+
+    // If found, highlight it and then delete
+    if (targetIndex != -1) {
+        recordStep(targetIndex, "Found " + std::to_string(value) + " at index " + std::to_string(targetIndex));
+        
+        // Now perform the actual deletion
+        linkedList.remove(value);
+        
+        // Record the final state with the node removed
+        recordStep(-1, "Successfully removed " + std::to_string(value));
+    } else {
+        recordStep(-1, "Value " + std::to_string(value) + " not found in list");
+    }
+
+    // Always move to the final step to show the result
+    currentStep = steps.size() - 1;
+    
+    // Force immediate visualization update
+    updateVisualization();
 }

@@ -31,8 +31,17 @@ void LinkedListScene::onSearch(const std::string& value) {
 }
 
 void LinkedListScene::onDelete(const std::string& value) {
-    // TODO: Delete value from LinkedList structure
-    displayStatus("Deleted: " + value);
+    try {
+        int val = std::stoi(value);
+        if (visualizer) {
+            auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
+            if (llVisualizer) {
+                llVisualizer->deleteValue(val);
+            }
+        }
+    } catch (const std::exception& e) {
+        displayStatus("Invalid value: " + value);
+    }
 }
 
 void LinkedListScene::onUpdate(const std::string& key, const std::string& value) {
