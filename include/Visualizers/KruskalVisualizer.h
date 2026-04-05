@@ -2,14 +2,19 @@
 
 #include "BaseVisualizer.h"
 #include "KruskalDataStructure.h"
+#include "VisualEdge.h"
 #include "VisualNode.h"
 
 #include <memory>
+#include <vector>
 
 class KruskalVisualizer : public BaseVisualizer {
 public:
     KruskalVisualizer();
     ~KruskalVisualizer() override = default;
+
+    void random();
+    void run();
 
     void processEvents(const sf::Event& event) override;
     void update(float deltaTime) override;
@@ -28,8 +33,15 @@ public:
     const KruskalDataStructure& data() const;
 
 private:
+    void buildStaticLayout();
+
     KruskalDataStructure graph;
-    std::unique_ptr<UI::VisualNode> demoNode;
+    std::vector<KruskalDataStructure::Edge> mstEdges;
+    std::vector<sf::Vector2f> layoutPositions;
+    sf::Font* font = nullptr;
+    std::size_t currentMstEdge = 0;
+    float animationElapsed = 0.0f;
     float playbackSpeed = 1.0f;
-    bool autoRun = false;
+    bool autoRun = true;
+    bool animationReady = false;
 };

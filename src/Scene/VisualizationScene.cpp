@@ -74,23 +74,30 @@ void VisualizationScene::update(float deltaTime) {
 }
 
 void VisualizationScene::render(sf::RenderWindow& window) {
+    const sf::Vector2u windowSize = window.getSize();
+    const float windowHeight = static_cast<float>(windowSize.y);
+    const float topBarHeight = 150.0f;
+    const float bottomBarHeight = std::clamp(windowHeight * 0.07f, 56.0f, 76.0f);
+    const float bottomBarY = windowHeight - bottomBarHeight;
+
     if (playbackWidget) {
-        playbackWidget->layout(window.getSize());
+        playbackWidget->layout(windowSize);
     }
 
     if (visualizer) {
+        visualizer->setDragRegion(topBarHeight, bottomBarY);
         visualizer->render(window);
     }
 
     sf::RectangleShape topBar;
     topBar.setPosition({0.0f, 0.0f});
-    topBar.setSize({static_cast<float>(window.getSize().x), 150.0f});
+    topBar.setSize({static_cast<float>(windowSize.x), topBarHeight});
     topBar.setFillColor(sf::Color(8, 28, 62));
     window.draw(topBar);
 
     sf::RectangleShape titleDivider;
     titleDivider.setPosition({0.0f, 75.0f});
-    titleDivider.setSize({static_cast<float>(window.getSize().x), 1.0f});
+    titleDivider.setSize({static_cast<float>(windowSize.x), 1.0f});
     titleDivider.setFillColor(sf::Color(140, 165, 205));
     window.draw(titleDivider);
 

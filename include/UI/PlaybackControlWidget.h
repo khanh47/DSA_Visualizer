@@ -44,7 +44,7 @@ private:
 
     PlaybackSpeed playbackSpeed;
     bool speedDragging = false;
-    bool autoRunMode = false;
+    bool autoRunMode = true;
 
     std::unique_ptr<UI::Button> modeButton;
     std::unique_ptr<UI::Button> firstStepButton;

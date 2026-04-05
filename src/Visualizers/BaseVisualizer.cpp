@@ -1,6 +1,15 @@
 #include "BaseVisualizer.h"
 #include <algorithm>
 
+void BaseVisualizer::setDragRegion(float topY, float bottomY) {
+    dragRegionTopY = topY;
+    dragRegionBottomY = std::max(topY, bottomY);
+}
+
+bool BaseVisualizer::isInsideDragRegion(const sf::Vector2f& position) const {
+    return position.y >= dragRegionTopY && position.y <= dragRegionBottomY;
+}
+
 void BaseVisualizer::handleZoomPanEvents(const sf::Event& event) {
     if (event.is<sf::Event::MouseWheelScrolled>()) {
         // Zoom in/out with mouse wheel
@@ -17,9 +26,10 @@ void BaseVisualizer::handleZoomPanEvents(const sf::Event& event) {
     } else if (event.is<sf::Event::MouseButtonPressed>()) {
         auto mouseButton = event.getIf<sf::Event::MouseButtonPressed>();
         if (mouseButton && mouseButton->button == sf::Mouse::Button::Left) {
-            isDragging = true;
-            lastMousePos = sf::Vector2f(static_cast<float>(mouseButton->position.x), 
-                                        static_cast<float>(mouseButton->position.y));
+            const sf::Vector2f pressedPos(static_cast<float>(mouseButton->position.x),
+                                          static_cast<float>(mouseButton->position.y));
+            isDragging = isInsideDragRegion(pressedPos);
+            lastMousePos = pressedPos;
         }
     } else if (event.is<sf::Event::MouseButtonReleased>()) {
         auto mouseButton = event.getIf<sf::Event::MouseButtonReleased>();
@@ -32,6 +42,10 @@ void BaseVisualizer::handleZoomPanEvents(const sf::Event& event) {
             if (mouseMove) {
                 sf::Vector2f currentMousePos(static_cast<float>(mouseMove->position.x), 
                                             static_cast<float>(mouseMove->position.y));
+                if (!isInsideDragRegion(currentMousePos)) {
+                    isDragging = false;
+                    return;
+                }
                 sf::Vector2f delta = currentMousePos - lastMousePos;
                 panOffset += delta;
                 lastMousePos = currentMousePos;
