@@ -1,0 +1,51 @@
+#include "VisualNode.h"
+
+#include <algorithm>
+
+namespace UI {
+
+VisualNode::VisualNode(sf::Font& font, const std::string& value, float radius)
+    : label(font, value, 20) {
+    const unsigned int textSize = static_cast<unsigned int>(std::clamp(radius * 0.7f, 10.0f, 48.0f));
+    label.setCharacterSize(textSize);
+
+    circle.setRadius(radius);
+    circle.setOrigin({radius, radius});
+    circle.setFillColor(sf::Color::White);
+    circle.setOutlineColor(sf::Color::Black);
+    circle.setOutlineThickness(5.0f);
+
+    label.setFillColor(sf::Color::Black);
+    updateLabelOrigin();
+}
+
+void VisualNode::setPosition(const sf::Vector2f& position) {
+    circle.setPosition(position);
+    label.setPosition(position);
+}
+
+void VisualNode::setValue(const std::string& value) {
+    label.setString(value);
+    updateLabelOrigin();
+}
+
+void VisualNode::setFillColor(const sf::Color& color) {
+    circle.setFillColor(color);
+}
+
+void VisualNode::setOutlineColor(const sf::Color& color) {
+    circle.setOutlineColor(color);
+}
+
+void VisualNode::render(sf::RenderWindow& window) const {
+    window.draw(circle);
+    window.draw(label);
+}
+
+void VisualNode::updateLabelOrigin() {
+    const sf::FloatRect bounds = label.getLocalBounds();
+    label.setOrigin({bounds.position.x + bounds.size.x * 0.5f,
+                     bounds.position.y + bounds.size.y * 0.5f});
+}
+
+} // namespace UI

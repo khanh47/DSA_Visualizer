@@ -85,7 +85,7 @@ void LinkedListVisualizer::updateVisualization(float windowWidth, float windowHe
         if (static_cast<int>(i) == currentState.highlightedIndex) {
             node->setFillColor(sf::Color(255, 165, 0)); // Orange for highlighted
         } else {
-            node->setFillColor(sf::Color(57, 74, 111)); // Default blue
+            node->setFillColor(sf::Color::White); // Default blue
         }
 
         visualNodes.push_back(std::move(node));

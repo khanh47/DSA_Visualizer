@@ -12,11 +12,23 @@ KruskalScene::KruskalScene(SceneManager& sceneManager)
 }
 
 void KruskalScene::onRandom() {
+    if (visualizer) {
+        auto* kruskalVisualizer = dynamic_cast<KruskalVisualizer*>(visualizer.get());
+        if (kruskalVisualizer) {
+            kruskalVisualizer->random();
+        }
+    }
     displayStatus("Generated random graph.");
 }
 
 void KruskalScene::onRun() {
-    displayStatus("Running kruskal algorithm.");
+    if (visualizer) {
+        auto* kruskalVisualizer = dynamic_cast<KruskalVisualizer*>(visualizer.get());
+        if (kruskalVisualizer) {
+            kruskalVisualizer->run();
+        }
+    }
+    displayStatus("Run kruskal.");
 }
 
 void KruskalScene::onReset() {
