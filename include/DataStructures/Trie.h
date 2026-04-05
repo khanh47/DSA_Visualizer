@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
-using namespace std;
+#include <iostream>
 
+using namespace std;
+///The class TrieNode for use
 class TrieNode {
 public:
     TrieNode* children[256];
@@ -15,7 +17,7 @@ class Trie {
 private:
     TrieNode* root;
     bool deleteHelper(TrieNode* current, const std::string& word, int index);
-
+///public node for .cpp files
 public:
     Trie();
     ~Trie();
@@ -25,3 +27,6 @@ public:
     void remove(const std::string& word);
     void update(const std::string& oldWord, const std::string& newWord);
 };
+
+
+
