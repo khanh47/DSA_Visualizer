@@ -13,7 +13,7 @@ VisualNode::VisualNode(sf::Font& font, const std::string& value, float radius)
     circle.setOrigin({radius, radius});
     circle.setFillColor(sf::Color::White);
     circle.setOutlineColor(sf::Color::Black);
-    circle.setOutlineThickness(5.0f);
+    circle.setOutlineThickness(3.0f);
 
     label.setFillColor(sf::Color::Black);
     updateLabelOrigin();
