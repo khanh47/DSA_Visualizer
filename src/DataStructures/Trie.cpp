@@ -1,12 +1,12 @@
 #include "Trie.h"
 using namespace std;
-
+///ending of the node
 TrieNode::TrieNode() : isEndOfWord(false) {
     for (int i = 0; i < 256; ++i) {
         children[i] = nullptr;
     }
 }
-
+///sdjskavjlflvn
 TrieNode::~TrieNode() {
     for (int i = 0; i < 256; ++i) {
         if (children[i] != nullptr) {
@@ -34,7 +34,7 @@ void Trie::insert(const string& word) {
     }
     current->isEndOfWord = true;
 }
-
+///hehe ahahah
 bool Trie::search(const string& word) const {
     TrieNode* current = root;
     for (char ch : word) {
@@ -68,7 +68,7 @@ bool Trie::deleteHelper(TrieNode* current, const string& word, int index) {
     }
 
     bool shouldDeleteCurrentNode = deleteHelper(current->children[ch], word, index + 1);
-
+/// do mixi
     if (shouldDeleteCurrentNode) {
         delete current->children[ch];
         current->children[ch] = nullptr;
@@ -87,11 +87,11 @@ bool Trie::deleteHelper(TrieNode* current, const string& word, int index) {
 
     return false;
 }
-
+///skib idi
 void Trie::remove(const string& word) {
     deleteHelper(root, word, 0);
 }
-
+///phung thanh do
 void Trie::update(const string& oldWord, const string& newWord) {
     if (search(oldWord)) {
         remove(oldWord);
