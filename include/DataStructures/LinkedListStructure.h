@@ -11,6 +11,7 @@ private:
 
 public:
     LinkedList();
+    ~LinkedList();
 
     void insert(int value);
     bool search(int value);

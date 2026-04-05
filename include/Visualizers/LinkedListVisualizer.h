@@ -33,6 +33,7 @@ public:
     void goToFinalStep() override;
 
     void insertValue(int value);
+    void deleteValue(int value);
     LinkedList& list();
     const LinkedList& list() const;
 
