@@ -1,9 +1,18 @@
 #include "HashTableVisualizer.h"
 #include "ResourceManager.h"
+#include <cmath>
 
 HashTableVisualizer::HashTableVisualizer() {
     font = ResourceManager::getInstance().getFont("Roboto");
     setMode(HashMode::CHAINING); // Default mode
+}
+
+void HashTableVisualizer::triggerAnimation() {
+    animationTimer = 2.0f; // Đặt thời gian nhấp nháy là 2 giây
+}
+
+void HashTableVisualizer::setPlaybackSpeed(float speed) {
+    currentSpeed = speed; // Gán tốc độ từ thanh trượt vào biến
 }
 
 void HashTableVisualizer::setMode(HashMode mode) {
@@ -46,14 +55,27 @@ void HashTableVisualizer::renderChaining(sf::RenderWindow& window) {
         float prevX = startX + boxW;
 
         for (const auto& node : table[i]) {
-            drawArrow(window, prevX, currentY + boxH / 2.0f, currentX, currentY + boxH / 2.0f);
-            sf::Color nodeColor = node.isHighlighted ? sf::Color(220, 100, 100) : sf::Color(100, 149, 237);
-            
-            std::string text = node.value.empty() ? node.key : node.key + ":" + node.value;
-            drawBox(window, currentX, currentY, text, nodeColor);
+                drawArrow(window, prevX, currentY + boxH / 2.0f, currentX, currentY + boxH / 2.0f);
+    
+                sf::Color nodeColor;
 
-            prevX = currentX + boxW;
-            currentX += boxW + hGap;
+                if (node.isHighlighted) {
+                    // --- ANIMATION NHẤP NHÁY Ở ĐÂY ---
+                    // Dùng hàm sin() để tạo dao động từ 0.0 đến 1.0 theo thời gian
+                    float pulse = (std::sin(elapsedTime * 8.0f) + 1.0f) / 2.0f;
+                    
+                    // Trộn màu Đỏ (255, 50, 50) và màu Vàng (255, 255, 50) theo nhịp đập
+                    std::uint8_t greenChannel = static_cast<std::uint8_t>(50 + pulse * 205);
+                    nodeColor = sf::Color(255, greenChannel, 50);
+                } else {
+                    nodeColor = sf::Color(100, 149, 237); // Màu xanh lam bình thường
+                }
+                
+                std::string text = node.value.empty() ? node.key : node.key + ":" + node.value;
+                drawBox(window, currentX, currentY, text, nodeColor);
+
+                prevX = currentX + boxW;
+                currentX += boxW + hGap;
         }
     }
 }
@@ -75,16 +97,64 @@ void HashTableVisualizer::drawBox(sf::RenderWindow& window, float x, float y, co
 }
 
 void HashTableVisualizer::drawArrow(sf::RenderWindow& window, float x1, float y1, float x2, float y2) {
-        sf::Vertex line[] = { 
+    // 1. Draw the main body of the arrow (the line)
+    sf::Vertex line[] = { 
         sf::Vertex{sf::Vector2f(x1, y1), sf::Color::Black}, 
         sf::Vertex{sf::Vector2f(x2, y2), sf::Color::Black} 
-        };
+    };
     window.draw(line, 2, sf::PrimitiveType::Lines);
+
+    // 2. Calculate coordinates for the arrowhead (triangle)
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    float angle = std::atan2(dy, dx); // Calculate the angle of the line
+
+    // Arrowhead configuration parameters
+    float arrowLength = 12.0f;          // Length of the arrowhead sides
+    float arrowAngle = 3.14159f / 6.0f; // Opening angle of the arrowhead (30 degrees = Pi/6 radians)
+
+    // Calculate the two back points to form the triangle
+    sf::Vector2f tip(x2, y2);
+    sf::Vector2f leftPoint(
+        x2 - arrowLength * std::cos(angle - arrowAngle),
+        y2 - arrowLength * std::sin(angle - arrowAngle)
+    );
+    sf::Vector2f rightPoint(
+        x2 - arrowLength * std::cos(angle + arrowAngle),
+        y2 - arrowLength * std::sin(angle + arrowAngle)
+    );
+
+    // 3. Draw the arrowhead
+    sf::Vertex arrowhead[] = {
+        sf::Vertex{tip, sf::Color::Black},
+        sf::Vertex{leftPoint, sf::Color::Black},
+        sf::Vertex{rightPoint, sf::Color::Black}
+    };
+    
+    // Use sf::PrimitiveType::Triangles to draw a filled solid triangle
+    window.draw(arrowhead, 3, sf::PrimitiveType::Triangles);
 }
 
 std::string HashTableVisualizer::getProperties() const {
     return "Hash Table Visualizer Properties";
 }
 
-void HashTableVisualizer::update(float deltaTime) {}
+void HashTableVisualizer::update(float deltaTime) {
+    elapsedTime += deltaTime * currentSpeed; 
+
+    // Nếu đồng hồ đang chạy (> 0)
+    if (animationTimer > 0.0f) {
+        // Trừ dần thời gian (chạy nhanh/chậm tùy theo thanh trượt speed)
+        animationTimer -= deltaTime * currentSpeed; 
+        
+        // Khi đồng hồ đếm ngược về 0
+        if (animationTimer <= 0.0f) {
+            animationTimer = 0.0f;
+            if (dataStructure) {
+                // TẮT TOÀN BỘ NHẤP NHÁY !
+                dataStructure->resetHighlights(); 
+            }
+        }
+    }
+}
 void HashTableVisualizer::processEvents(const sf::Event& event) {}
