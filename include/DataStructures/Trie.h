@@ -22,6 +22,7 @@ public:
     Trie();
     ~Trie();
 
+    TrieNode* getRoot() const { return root; }
     void insert(const std::string& word);
     bool search(const std::string& word) const;
     void remove(const std::string& word);
