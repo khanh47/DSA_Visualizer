@@ -39,7 +39,7 @@ public:
     virtual void onReset() {};
 
     // Playback hooks for the bottom control bar.
-    virtual void onPlaybackSpeedChanged(float speed) { (void)speed; }
+    virtual void onPlaybackSpeedChanged(float speed);
     virtual void onTogglePlaybackMode(bool autoRun) { (void)autoRun; }
     virtual void onGoToFirstStep() {}
     virtual void onGoToPreviousStep() {}
@@ -58,4 +58,11 @@ protected:
     std::unique_ptr<OperationMenu> operationMenu;
     std::unique_ptr<BaseVisualizer> visualizer;
     std::unique_ptr<UI::PlaybackControlWidget> playbackWidget;
+
+    std::vector<std::string> statusQueue;
+    float statusTimer = 0.0f;
+    int currentStatusIndex = -1;
+    float playbackSpeedScale = 1.0f;
+
+    void displayStatusSequence(const std::vector<std::string>& sequence);
 };

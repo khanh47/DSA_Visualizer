@@ -2,13 +2,14 @@
 #include "ResourceManager.h"
 #include "OperationCommand.h"
 #include "SceneCommand.h"
+#include <iostream>
 
 VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     : manager(sceneManager),
       statusText(ResourceManager::getInstance().getFont("Roboto"), "") {
     
     // Initialize back button
-    statusText.setPosition({100.0f, 500.0f});
+    statusText.setPosition({50.0f, 195.0f});
     statusText.setCharacterSize(28);
     statusText.setFillColor(sf::Color(30, 30, 30));
     statusText.setStyle(sf::Text::Bold);
@@ -68,8 +69,18 @@ void VisualizationScene::processEvents(const sf::Event& event) {
 }
 
 void VisualizationScene::update(float deltaTime) {
-    if (visualizer) {
-        visualizer->update(deltaTime);
+    if (visualizer) visualizer->update(deltaTime);
+
+    if (currentStatusIndex != -1 && currentStatusIndex < (int)statusQueue.size() - 1) {
+        // Tốc độ đếm giờ phụ thuộc vào thanh trượt
+        statusTimer += deltaTime * playbackSpeedScale; 
+
+        // Đặt mốc cơ bản là 1.5 giây (khi ở mức 1.0x)
+        if (statusTimer >= 1.5f) { 
+            statusTimer = 0.0f;
+            currentStatusIndex++;
+            statusText.setString(statusQueue[currentStatusIndex]);
+        }
     }
 }
 
@@ -110,4 +121,17 @@ void VisualizationScene::render(sf::RenderWindow& window) {
 
     window.draw(label);
     window.draw(statusText);
+}
+
+void VisualizationScene::onPlaybackSpeedChanged(float speed) {
+    // 1. Cập nhật biến tỉ lệ tốc độ (Dùng cho việc hiện chữ)
+    this->playbackSpeedScale = speed;
+
+    // 2. In ra Console để kiểm tra chắc chắn giá trị có thay đổi không
+    std::cout << "[DEBUG] Toc do hien tai: " << this->playbackSpeedScale << "x" << std::endl;
+
+    // 3. Cập nhật cho Visualizer (Dùng cho thuật toán)
+    if (this->visualizer) {
+        this->visualizer->setPlaybackSpeed(speed);
+    }
 }

@@ -10,6 +10,10 @@ private:
     std::unique_ptr<IHashTable> dataStructure;
     sf::Font font;
 
+    float elapsedTime = 0.0f;    
+    float currentSpeed = 1.0f;
+    float animationTimer = 0.0f;
+
     // Draw Helpers
     void drawBox(sf::RenderWindow& window, float x, float y, const std::string& text, sf::Color bgColor);
     void drawArrow(sf::RenderWindow& window, float startX, float startY, float endX, float endY);
@@ -22,6 +26,10 @@ public:
     HashTableVisualizer();
 
     std::string getProperties() const override; 
+
+    void setPlaybackSpeed(float speed) override;
+
+    void triggerAnimation(); 
     
     void setMode(HashMode mode); // Switch between chaining, probing, etc.
     IHashTable* getData() { return dataStructure.get(); }
@@ -32,7 +40,6 @@ public:
     void processEvents(const sf::Event& event) override;
 
     // Required by BaseVisualizer
-    void setPlaybackSpeed(float speed) override {}
     void setAutoRun(bool value) override {}
     void goToFirstStep() override {}
     void goToPreviousStep() override {}
