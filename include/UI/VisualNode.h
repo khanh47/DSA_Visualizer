@@ -13,6 +13,7 @@ public:
     void setValue(const std::string& value);
     void setFillColor(const sf::Color& color);
     void setOutlineColor(const sf::Color& color);
+    void setAlpha(std::uint8_t alpha);  // Set transparency for fade animations
     void render(sf::RenderWindow& window) const;
 
 private:
