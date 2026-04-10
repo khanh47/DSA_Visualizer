@@ -14,6 +14,7 @@ public:
     void setFillColor(const sf::Color& color);
     void setOutlineColor(const sf::Color& color);
     void setAlpha(std::uint8_t alpha);  // Set transparency for fade animations
+    void setRadius(float radius);       // Change radius for scale animations
     void render(sf::RenderWindow& window) const;
 
 private:

@@ -51,6 +51,15 @@ void VisualNode::setAlpha(std::uint8_t alpha) {
     label.setFillColor(textColor);
 }
 
+void VisualNode::setRadius(float radius) {
+    circle.setRadius(radius);
+    circle.setOrigin({radius, radius});
+    // Re-scale text to fit
+    const unsigned int textSize = static_cast<unsigned int>(std::clamp(radius * 0.7f, 10.0f, 48.0f));
+    label.setCharacterSize(textSize);
+    updateLabelOrigin();
+}
+
 void VisualNode::render(sf::RenderWindow& window) const {
     window.draw(circle);
     window.draw(label);
