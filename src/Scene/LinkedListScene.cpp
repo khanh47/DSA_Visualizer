@@ -26,8 +26,17 @@ void LinkedListScene::onInsert(const std::string& value) {
 }
 
 void LinkedListScene::onSearch(const std::string& value) {
-    // TODO: Search for value in LinkedList structure
-    displayStatus("Searching: " + value);
+    try {
+        int val = std::stoi(value);
+        if (visualizer) {
+            auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
+            if (llVisualizer) {
+                llVisualizer->searchValue(val);
+            }
+        }
+    } catch (const std::exception& e) {
+        displayStatus("Invalid value: " + value);
+    }
 }
 
 void LinkedListScene::onDelete(const std::string& value) {
