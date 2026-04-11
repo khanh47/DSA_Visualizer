@@ -34,11 +34,14 @@ public:
 
 private:
     void buildStaticLayout();
+    void syncAlgorithmState();
 
     KruskalDataStructure graph;
     std::vector<KruskalDataStructure::Edge> mstEdges;
     std::vector<sf::Vector2f> layoutPositions;
+    std::vector<int> currentParents;
     sf::Font* font = nullptr;
+    std::size_t currentEdgeIndex = 0;
     std::size_t currentMstEdge = 0;
     float animationElapsed = 0.0f;
     float playbackSpeed = 1.0f;

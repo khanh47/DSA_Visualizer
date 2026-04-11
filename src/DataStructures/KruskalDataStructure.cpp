@@ -1,5 +1,4 @@
 #include "KruskalDataStructure.h"
-#include <iostream>
 
 void KruskalDataStructure::clear() {
     numNodes = 0;
@@ -42,11 +41,6 @@ void KruskalDataStructure::randomGraph() {
             }
         }
     }
-    std::cout << "Graph:\n";
-    for (Edge edge : edges) std::cout << edge.u << ' ' << edge.v << ' ' << edge.w << "\n";
-    std::sort(edges.begin(), edges.end(), [](const Edge& a, const Edge& b) {
-        return a.w < b.w;
-    });
 }
 
 std::vector<KruskalDataStructure::Edge> KruskalDataStructure::runKruskal() const {
