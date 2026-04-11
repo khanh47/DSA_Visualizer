@@ -18,7 +18,6 @@ void KruskalScene::onRandom() {
             kruskalVisualizer->random();
         }
     }
-    displayStatus("Generated random graph.");
 }
 
 void KruskalScene::onRun() {
@@ -28,14 +27,12 @@ void KruskalScene::onRun() {
             kruskalVisualizer->run();
         }
     }
-    displayStatus("Run kruskal.");
 }
 
 void KruskalScene::onReset() {
     if (visualizer) {
         visualizer->reset();
     }
-    displayStatus("Kruskal reset.");
 }
 
 void KruskalScene::onPlaybackSpeedChanged(float speed) {
@@ -48,35 +45,30 @@ void KruskalScene::onTogglePlaybackMode(bool autoRun) {
     if (visualizer) {
         visualizer->setAutoRun(autoRun);
     }
-    displayStatus(autoRun ? "Playback mode: auto" : "Playback mode: manual");
 }
 
 void KruskalScene::onGoToFirstStep() {
     if (visualizer) {
         visualizer->goToFirstStep();
     }
-    displayStatus("Go to first step.");
 }
 
 void KruskalScene::onGoToPreviousStep() {
     if (visualizer) {
         visualizer->goToPreviousStep();
     }
-    displayStatus("Go to previous step.");
 }
 
 void KruskalScene::onGoToNextStep() {
     if (visualizer) {
         visualizer->goToNextStep();
     }
-    displayStatus("Go to next step.");
 }
 
 void KruskalScene::onGoToFinalStep() {
     if (visualizer) {
         visualizer->goToFinalStep();
     }
-    displayStatus("Go to final step.");
 }
 
 std::string KruskalScene::getSceneTitle() const {
