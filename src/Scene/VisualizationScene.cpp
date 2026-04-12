@@ -72,6 +72,20 @@ void VisualizationScene::update(float deltaTime) {
     if (visualizer) visualizer->update(deltaTime);
 
     if (currentStatusIndex != -1 && currentStatusIndex < (int)statusQueue.size() - 1) {
+        
+        bool isAuto = true;
+        if (playbackWidget) {
+            isAuto = playbackWidget->isAutoRunMode();
+        }
+
+                if (isAuto) {
+            statusTimer += deltaTime * playbackSpeedScale; 
+
+            if (statusTimer >= 1.5f) { 
+                onGoToNextStep(); // Tự động gọi hàm sang bước tiếp theo
+            }
+        }
+/*
         // Tốc độ đếm giờ phụ thuộc vào thanh trượt
         statusTimer += deltaTime * playbackSpeedScale; 
 
@@ -81,6 +95,7 @@ void VisualizationScene::update(float deltaTime) {
             currentStatusIndex++;
             statusText.setString(statusQueue[currentStatusIndex]);
         }
+*/
     }
 }
 
@@ -140,5 +155,50 @@ void VisualizationScene::onPlaybackSpeedChanged(float speed) {
     // 3. Cập nhật cho Visualizer (Dùng cho thuật toán)
     if (this->visualizer) {
         this->visualizer->setPlaybackSpeed(speed);
+    }
+}
+
+void VisualizationScene::displayStatusSequence(const std::vector<std::string>& sequence) {
+    statusQueue = sequence;
+    currentStatusIndex = 0;
+    statusTimer = 0.0f;
+    
+    // Ngay lập tức hiển thị dòng đầu tiên trong danh sách
+    if (!statusQueue.empty()) {
+        statusText.setString(statusQueue[0]);
+    }
+}
+
+void VisualizationScene::onGoToNextStep() {
+    // Nếu chưa đến câu cuối cùng thì tiến tới 1 bước
+    if (currentStatusIndex != -1 && currentStatusIndex < (int)statusQueue.size() - 1) {
+        currentStatusIndex++;
+        statusText.setString(statusQueue[currentStatusIndex]);
+        statusTimer = 0.0f; // Reset đồng hồ
+    }
+}
+
+void VisualizationScene::onGoToPreviousStep() {
+    // Nếu chưa lùi về câu đầu tiên thì lùi lại 1 bước
+    if (currentStatusIndex > 0) {
+        currentStatusIndex--;
+        statusText.setString(statusQueue[currentStatusIndex]);
+        statusTimer = 0.0f;
+    }
+}
+
+void VisualizationScene::onGoToFirstStep() {
+    if (!statusQueue.empty()) {
+        currentStatusIndex = 0; // Về index 0
+        statusText.setString(statusQueue[currentStatusIndex]);
+        statusTimer = 0.0f;
+    }
+}
+
+void VisualizationScene::onGoToFinalStep() {
+    if (!statusQueue.empty()) {
+        currentStatusIndex = (int)statusQueue.size() - 1; // Về index cuối cùng
+        statusText.setString(statusQueue[currentStatusIndex]);
+        statusTimer = 0.0f;
     }
 }

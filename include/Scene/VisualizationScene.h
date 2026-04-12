@@ -41,10 +41,10 @@ public:
     // Playback hooks for the bottom control bar.
     virtual void onPlaybackSpeedChanged(float speed);
     virtual void onTogglePlaybackMode(bool autoRun) { (void)autoRun; }
-    virtual void onGoToFirstStep() {}
-    virtual void onGoToPreviousStep() {}
-    virtual void onGoToNextStep() {}
-    virtual void onGoToFinalStep() {}
+    virtual void onGoToFirstStep();
+    virtual void onGoToPreviousStep();
+    virtual void onGoToNextStep();
+    virtual void onGoToFinalStep();
 
     // Helper method for child classes to override
     virtual std::string getSceneTitle() const = 0;

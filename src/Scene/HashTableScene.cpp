@@ -90,15 +90,29 @@ std::string HashTableScene::getHashMathString(const std::string& key) {
 void HashTableScene::onInsert(const std::string& value) {
     if (value.empty()) return;
 
-    startMathSequence(value); // Bắt đầu hiệu ứng giải toán ở phía trên
+    int sum = 0;
+    for (char c : value) sum += static_cast<int>(c);
+    int m = getHashVisualizer()->getData()->getCapacity();
+    int index = sum % m;
 
+    // 1. Chạy thuật toán trước để biết thành công hay thất bại
     bool success = getHashVisualizer()->getData()->insert(value, "");
+
+    // 2. Tạo chuỗi thông báo từng bước
+    std::vector<std::string> sequence;
+    sequence.push_back("Hashing: \"" + value + "\"");
+    sequence.push_back("Hashing: \"" + value + "\" -> Sum ASCII = " + std::to_string(sum));
+    sequence.push_back("Formula: " + std::to_string(sum) + " % " + std::to_string(m));
+
+    // 3. Tùy theo kết quả mà in ra câu chốt hạ
     if (success) {
-        displayStatus("Inserted!"); // Vẫn hiện thông báo ở vị trí cũ (dưới)
-        getHashVisualizer()->triggerAnimation();
+        sequence.push_back("Result: Index " + std::to_string(index) + " -> Inserted!");
+        getHashVisualizer()->triggerAnimation(); // Kích hoạt nhấp nháy ô vuông
     } else {
-        displayStatus("Failed: Key exists");
+        sequence.push_back("Failed: Key '" + value + "' already exists!");
     }
+
+    displayStatusSequence(sequence);
 }
 void HashTableScene::onSearch(const std::string& value) {
     if (value.empty()) return;
@@ -152,8 +166,23 @@ void HashTableScene::startMathSequence(const std::string& key) {
 // ... Keep your playback functions exactly the same ...
 void HashTableScene::onReset() { if(visualizer) visualizer->reset(); }
 void HashTableScene::onTogglePlaybackMode(bool a) { if(visualizer) visualizer->setAutoRun(a); }
-void HashTableScene::onGoToFirstStep() { if(visualizer) visualizer->goToFirstStep(); }
-void HashTableScene::onGoToPreviousStep() { if(visualizer) visualizer->goToPreviousStep(); }
-void HashTableScene::onGoToNextStep() { if(visualizer) visualizer->goToNextStep(); }
-void HashTableScene::onGoToFinalStep() { if(visualizer) visualizer->goToFinalStep(); }
+void HashTableScene::onGoToFirstStep() { 
+    VisualizationScene::onGoToFirstStep(); // <--- Mở cửa cho lớp cha lùi chữ
+    if(visualizer) visualizer->goToFirstStep(); 
+}
+
+void HashTableScene::onGoToPreviousStep() { 
+    VisualizationScene::onGoToPreviousStep(); // <--- Mở cửa cho lớp cha lùi chữ
+    if(visualizer) visualizer->goToPreviousStep(); 
+}
+
+void HashTableScene::onGoToNextStep() { 
+    VisualizationScene::onGoToNextStep(); // <--- Mở cửa cho lớp cha tiến chữ
+    if(visualizer) visualizer->goToNextStep(); 
+}
+
+void HashTableScene::onGoToFinalStep() { 
+    VisualizationScene::onGoToFinalStep(); // <--- Mở cửa cho lớp cha tiến chữ
+    if(visualizer) visualizer->goToFinalStep(); 
+}
 std::string HashTableScene::getSceneTitle() const { return "Hash Table Visualization"; }
