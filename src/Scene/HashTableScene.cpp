@@ -166,8 +166,23 @@ void HashTableScene::startMathSequence(const std::string& key) {
 // ... Keep your playback functions exactly the same ...
 void HashTableScene::onReset() { if(visualizer) visualizer->reset(); }
 void HashTableScene::onTogglePlaybackMode(bool a) { if(visualizer) visualizer->setAutoRun(a); }
-void HashTableScene::onGoToFirstStep() { if(visualizer) visualizer->goToFirstStep(); }
-void HashTableScene::onGoToPreviousStep() { if(visualizer) visualizer->goToPreviousStep(); }
-void HashTableScene::onGoToNextStep() { if(visualizer) visualizer->goToNextStep(); }
-void HashTableScene::onGoToFinalStep() { if(visualizer) visualizer->goToFinalStep(); }
+void HashTableScene::onGoToFirstStep() { 
+    VisualizationScene::onGoToFirstStep(); // <--- Mở cửa cho lớp cha lùi chữ
+    if(visualizer) visualizer->goToFirstStep(); 
+}
+
+void HashTableScene::onGoToPreviousStep() { 
+    VisualizationScene::onGoToPreviousStep(); // <--- Mở cửa cho lớp cha lùi chữ
+    if(visualizer) visualizer->goToPreviousStep(); 
+}
+
+void HashTableScene::onGoToNextStep() { 
+    VisualizationScene::onGoToNextStep(); // <--- Mở cửa cho lớp cha tiến chữ
+    if(visualizer) visualizer->goToNextStep(); 
+}
+
+void HashTableScene::onGoToFinalStep() { 
+    VisualizationScene::onGoToFinalStep(); // <--- Mở cửa cho lớp cha tiến chữ
+    if(visualizer) visualizer->goToFinalStep(); 
+}
 std::string HashTableScene::getSceneTitle() const { return "Hash Table Visualization"; }
