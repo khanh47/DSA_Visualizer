@@ -72,6 +72,9 @@ void VisualizationScene::update(float deltaTime) {
     if (visualizer) visualizer->update(deltaTime);
 
     if (currentStatusIndex != -1 && currentStatusIndex < (int)statusQueue.size() - 1) {
+        
+        std::cout << "[TRAM 4] Dang tinh toan chu chay voi toc do: " << playbackSpeedScale << "x" << std::endl;
+
         // Tốc độ đếm giờ phụ thuộc vào thanh trượt
         statusTimer += deltaTime * playbackSpeedScale; 
 
@@ -133,5 +136,17 @@ void VisualizationScene::onPlaybackSpeedChanged(float speed) {
     // 3. Cập nhật cho Visualizer (Dùng cho thuật toán)
     if (this->visualizer) {
         this->visualizer->setPlaybackSpeed(speed);
+    }
+}
+
+// THÊM ĐOẠN CODE NÀY VÀO FILE VisualizationScene.cpp
+void VisualizationScene::displayStatusSequence(const std::vector<std::string>& sequence) {
+    statusQueue = sequence;
+    currentStatusIndex = 0;
+    statusTimer = 0.0f;
+    
+    // Ngay lập tức hiển thị dòng đầu tiên trong danh sách
+    if (!statusQueue.empty()) {
+        statusText.setString(statusQueue[0]);
     }
 }
