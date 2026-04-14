@@ -14,7 +14,7 @@ PlaybackControlWidget::PlaybackControlWidget()
 
     speedTrack.setFillColor(sf::Color(95, 105, 122));
     speedFill.setFillColor(sf::Color(40, 221, 255));
-    speedKnob.setSize({14.0f, 14.0f});
+    speedKnob.setRadius(7.0f);
     speedKnob.setOrigin({7.0f, 7.0f});
     speedKnob.setFillColor(sf::Color(238, 242, 248));
 
