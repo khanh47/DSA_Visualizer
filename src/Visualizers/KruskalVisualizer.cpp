@@ -451,7 +451,7 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
         window.draw(t);
     };
 
-    drawText("Looking at disjoint set", 16, {leftContentX, leftContentY}, sf::Color(40, 50, 70), true);
+    drawText("Looking at disjoint set", 26, {leftContentX, leftContentY}, sf::Color(40, 50, 70), true);
 
     std::string findLine;
     if (hasCurrentEdge) {
@@ -462,21 +462,21 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     } else {
         findLine = "No current edge";
     }
-    drawText(findLine, 15, {leftContentX, leftContentY + 30.0f}, sf::Color(30, 40, 60));
+    drawText(findLine, 20, {leftContentX, leftContentY + 45.0f}, sf::Color(30, 40, 60));
 
-    drawText("Vertex      Set ID", 15, {leftContentX, leftContentY + 56.0f}, sf::Color(30, 40, 60), true);
+    drawText("Vertex      Set ID", 26, {leftContentX, leftContentY + 80.0f}, sf::Color(30, 40, 60), true);
 
     for (int node = 0; node < nodeCount; ++node) {
-        const float rowY = leftContentY + 82.0f + static_cast<float>(node) * rowHeight;
+        const float rowY = leftContentY + 120.0f + static_cast<float>(node) * rowHeight;
 
         const bool isCurrentVertex = hasCurrentEdge && (node == currentEdge.u || node == currentEdge.v);
         const sf::Color rowColor = isCurrentVertex ? sf::Color(220, 120, 25) : sf::Color(30, 40, 60);
-        drawText(makeVertexLabel(node), 15, {leftContentX + 10.0f, rowY}, rowColor);
-        drawText(std::to_string(componentLabels[static_cast<std::size_t>(node)]), 15, {leftContentX + 116.0f, rowY}, rowColor);
+        drawText(makeVertexLabel(node), 20, {leftContentX + 10.0f, rowY}, rowColor);
+        drawText(std::to_string(componentLabels[static_cast<std::size_t>(node)]), 20, {leftContentX + 116.0f, rowY}, rowColor);
     }
 
     const float queueX = leftContentX;
-    const float queueY = leftContentY + 120.0f + static_cast<float>(nodeCount) * rowHeight;
+    const float queueY = leftContentY + 150.0f + static_cast<float>(nodeCount) * rowHeight;
 
     std::string currentEdgeLine;
     if (hasCurrentEdge) {
@@ -484,17 +484,17 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     } else {
         currentEdgeLine = "Current edge: done";
     }
-    drawText(currentEdgeLine, 15, {queueX, queueY}, sf::Color(30, 40, 60));
-    drawText("List of edges:", 15, {queueX, queueY + 22.0f}, sf::Color(30, 40, 60), true);
+    drawText(currentEdgeLine, 20, {queueX, queueY}, sf::Color(30, 40, 60));
+    drawText("List of edges:", 20, {queueX, queueY + 30.0f}, sf::Color(30, 40, 60), true);
 
-    const float queueStartY = queueY + 48.0f;
+    const float queueStartY = queueY + 60.0f;
     for (std::size_t i = 0; i < edges.size(); ++i) {
         const auto& edge = edges[i];
         const bool isCurrentQueueEdge = hasCurrentEdge && i == displayedEdgeIndex;
-
-        sf::Text edgeText(*font, makeEdgeLabel(edge) + "   " + std::to_string(edge.w), 14);
+        
+        sf::Text edgeText(*font, makeEdgeLabel(edge) + "   " + std::to_string(edge.w), 20);
         edgeText.setFillColor(isCurrentQueueEdge ? sf::Color(220, 120, 25) : sf::Color(35, 45, 60));
-        edgeText.setPosition({queueX, queueStartY + static_cast<float>(i) * 28.0f});
+        edgeText.setPosition({queueX, queueStartY + static_cast<float>(i) * 30.0f});
 
         if (isCurrentQueueEdge) {
             const sf::FloatRect textBounds = edgeText.getLocalBounds();

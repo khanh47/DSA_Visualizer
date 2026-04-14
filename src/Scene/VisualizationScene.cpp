@@ -13,7 +13,7 @@ VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     statusText.setCharacterSize(28);
     statusText.setFillColor(sf::Color(30, 30, 30));
     statusText.setStyle(sf::Text::Bold);
-    backButton = std::unique_ptr<UI::Button>(new UI::Button({16.0f, 20.0f}, {36.0f, 36.0f}, sf::Color(18, 40, 78), "<", 30));
+    backButton = std::unique_ptr<UI::Button>(new UI::Button({16.0f, 20.0f}, {36.0f, 36.0f}, sf::Color(8, 28, 62), "<", 30));
     backButton->setCommand(createPopSceneCommand(manager));
 
     playbackWidget = std::make_unique<UI::PlaybackControlWidget>();

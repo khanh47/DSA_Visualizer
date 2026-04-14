@@ -39,7 +39,7 @@ private:
     sf::RectangleShape bottomBar;
     sf::RectangleShape speedTrack;
     sf::RectangleShape speedFill;
-    sf::RectangleShape speedKnob;
+    sf::CircleShape speedKnob;
     sf::Text speedText;
 
     PlaybackSpeed playbackSpeed;
