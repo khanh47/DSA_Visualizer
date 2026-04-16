@@ -15,8 +15,6 @@ SelectBox::SelectBox(const sf::Vector2f& position,
     mainBox.setPosition(position);
     mainBox.setSize(size);
     mainBox.setFillColor(sf::Color(58, 66, 88));
-    mainBox.setOutlineThickness(2.0f);
-    mainBox.setOutlineColor(sf::Color(120, 150, 230));
 
     mainText.setFillColor(sf::Color::White);
     mainText.setPosition({position.x + 12.0f, position.y + 8.0f});

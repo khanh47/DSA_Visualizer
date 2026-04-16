@@ -18,7 +18,8 @@ void LinkedListScene::onInsert(const std::string& value) {
         if (visualizer) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
-                llVisualizer->insertValue(val);
+                std::string option = operationMenu ? operationMenu->getInsertOption() : "";
+                llVisualizer->insertValue(val, option == "At Head");
             }
         }
     } catch (const std::exception& e) {

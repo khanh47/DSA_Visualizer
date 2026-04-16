@@ -36,7 +36,7 @@ public:
     void goToNextStep() override;
     void goToFinalStep() override;
 
-    void insertValue(int value);
+    void insertValue(int value, bool atHead = false);
     void deleteByIndex(int index);
     void searchValue(int value);
     void updateByIndex(int index, int newVal);

@@ -56,17 +56,23 @@ const LinkedList& LinkedListVisualizer::list() const { return linkedList; }
 
 // ── Operations ──────────────────────────────────────────────────────────────
 
-void LinkedListVisualizer::insertValue(int value) {
+void LinkedListVisualizer::insertValue(int value, bool atHead) {
     steps.clear(); currentStep = 0; nodePositions.clear();
 
-    linkedList.insert(value);
+    if (atHead) {
+        linkedList.insertAtHead(value);
+    } else {
+        linkedList.insert(value);
+    }
 
-    // Find index of the newly inserted node (tail)
+    // Find index of the newly inserted node
     int newIndex = 0;
-    Node* cur = linkedList.getHead();
-    while (cur && cur->next) { newIndex++; cur = cur->next; }
+    if (!atHead) {
+        Node* cur = linkedList.getHead();
+        while (cur && cur->next) { newIndex++; cur = cur->next; }
+    }
 
-    recordStep(-1, "Inserted " + std::to_string(value), newIndex);
+    recordStep(-1, "Inserted " + std::to_string(value) + (atHead ? " at head" : " at tail"), newIndex);
 
     currentStep = 0; elapsedTime = 0.0f; isAnimating = false;
     droppingNodeIndex = newIndex; dropAnimProgress = 0.0f; isDropAnimating = true;

@@ -23,7 +23,6 @@ public:
     void update(float deltaTime) override;
     void render(sf::RenderWindow& window) override;
 
-    // Generic hooks with default no-op behavior.
     virtual void onInsert(const std::string& value) { (void)value; }
     virtual void onSearch(const std::string& value) { (void)value; }
     virtual void onDelete(const std::string& value) { (void)value; }

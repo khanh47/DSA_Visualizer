@@ -8,6 +8,7 @@
 #include "ButtonMenu.h"
 #include "OperationCommand.h"
 #include "TextBoxGroup.h"
+#include "SelectBox.h"
 
 struct OperationMenuItem {
     std::string label;
@@ -20,6 +21,7 @@ class OperationMenu {
 private:
     std::unique_ptr<UI::ButtonMenu> menu;
     UI::TextBoxGroup inputTextBoxes;
+    std::unique_ptr<UI::SelectBox> insertTypeSelectBox;
     std::vector<OperationMenuItem> menuItems;
     VisualizationScene& scene;
     sf::RectangleShape background;
@@ -33,10 +35,10 @@ public:
     void update(float deltaTime);
     void render(sf::RenderWindow& window);
     std::string getInputValue(std::size_t index = 0) const;
+    std::string getInsertOption() const;
     std::size_t getInputCount() const;
 
 private:
     float calculateMenuStartX(std::size_t buttonCount, float spacing, float buttonWidth) const;
-    void initMenu();
-    void initInputBoxes();
+    void buildUI();
 };

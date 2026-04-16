@@ -28,6 +28,11 @@ void LinkedList::insert(int value) {
     cur->next = newNode;
 }
 
+void LinkedList::insertAtHead(int value) {
+    Node* newNode = new Node{value, head};
+    head = newNode;
+}
+
 void LinkedList::remove(int index) {
     if (!head || index < 1) return;
 
