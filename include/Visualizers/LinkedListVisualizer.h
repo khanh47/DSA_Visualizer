@@ -14,6 +14,7 @@ struct InsertStep {
     int successIndex = -1;
     int blinkIndex = -1;       // Index of node to blink green/orange before deletion
     int searchFoundIndex = -1; // Index of node found by search (scale up + color transition)
+    int updateIndex = -1;      // Index of node being updated
     std::string description;
 };
 
@@ -36,8 +37,9 @@ public:
     void goToFinalStep() override;
 
     void insertValue(int value);
-    void deleteValue(int value);
+    void deleteByIndex(int index);
     void searchValue(int value);
+    void updateByIndex(int index, int newVal);
     LinkedList& list();
     const LinkedList& list() const;
 
@@ -75,6 +77,11 @@ private:
     bool isSearchHighlighting = false;     // Phase 2: scale up + color transition
     float searchHighlightProgress = 0.0f;  // 0→1 for color transition & scale
 
+    // Update animation: node pops and changes color
+    int updatingNodeIndex = -1;
+    float updateAnimProgress = 0.0f;
+    bool isUpdateAnimating = false;
+
     std::vector<std::unique_ptr<UI::VisualNode>> visualNodes;
     std::vector<sf::Vector2f> nodePositions;   // Store node positions for drawing arrows
     std::vector<float> nodeRenderedRadii;        // Actual radius of each node (for arrow alignment)
@@ -86,10 +93,10 @@ private:
 
     void updateVisualization(float windowWidth = 800.0f, float windowHeight = 600.0f);
     std::vector<int> listToVector() const;
-    void recordStep(int highlightedIndex, const std::string& description, int successIndex = -1, int blinkIndex = -1, int searchFoundIndex = -1);
+    void recordStep(int highlightedIndex, const std::string& description, int successIndex = -1, int blinkIndex = -1, int searchFoundIndex = -1, int updateIndex = -1);
 
     // Helpers (refactored from render / updateVisualization)
     void applyNodeColor(UI::VisualNode& node, int index, const InsertStep& step, float& renderedRadius);
     void drawArrow(sf::RenderWindow& window, size_t fromIdx, size_t toIdx);
-    int buildTraverseSteps(int value);  // shared traverse logic for delete & search
+    int buildTraverseSteps(int target, bool byIndex = false);  // shared traverse logic for search, update, delete
 };

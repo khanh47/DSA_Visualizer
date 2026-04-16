@@ -15,8 +15,8 @@ public:
 
     void insert(int value);
     bool search(int value);
-    void remove(int value);
-    void update(int oldVal, int newVal);
+    void remove(int index);
+    void update(int index, int newVal);
 
     Node* getHead() const;
 };

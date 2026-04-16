@@ -41,21 +41,31 @@ void LinkedListScene::onSearch(const std::string& value) {
 
 void LinkedListScene::onDelete(const std::string& value) {
     try {
-        int val = std::stoi(value);
+        int index = std::stoi(value);
         if (visualizer) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
-                llVisualizer->deleteValue(val);
+                llVisualizer->deleteByIndex(index);
             }
         }
     } catch (const std::exception& e) {
-        displayStatus("Invalid value: " + value);
+        displayStatus("Invalid index: " + value);
     }
 }
 
 void LinkedListScene::onUpdate(const std::string& key, const std::string& value) {
-    // TODO: Update LinkedList with given mode (e.g., BFS, DFS)
-    displayStatus("Updating " + key + " with: " + value);
+    try {
+        int index = std::stoi(key);
+        int newVal = std::stoi(value);
+        if (visualizer) {
+            auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
+            if (llVisualizer) {
+                llVisualizer->updateByIndex(index, newVal);
+            }
+        }
+    } catch (const std::exception& e) {
+        displayStatus("Invalid index or value: " + key + ", " + value);
+    }
 }
 
 void LinkedListScene::onReset() {

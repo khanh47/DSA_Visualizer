@@ -19,27 +19,34 @@ std::vector<int> LinkedListVisualizer::listToVector() const {
 }
 
 void LinkedListVisualizer::recordStep(int highlightedIndex, const std::string& description,
-                                       int successIndex, int blinkIndex, int searchFoundIndex) {
+                                       int successIndex, int blinkIndex, int searchFoundIndex, int updateIndex) {
     InsertStep step;
     step.nodeValues       = listToVector();
     step.highlightedIndex = highlightedIndex;
     step.successIndex     = successIndex;
     step.blinkIndex       = blinkIndex;
     step.searchFoundIndex = searchFoundIndex;
+    step.updateIndex      = updateIndex;
     step.description      = description;
     steps.push_back(step);
 }
 
-int LinkedListVisualizer::buildTraverseSteps(int value) {
-    recordStep(-1, "Searching for value " + std::to_string(value));
+int LinkedListVisualizer::buildTraverseSteps(int target, bool byIndex) {
+    if (byIndex && target < 1) {
+        recordStep(-1, "Invalid index " + std::to_string(target));
+        return -1;
+    }
+
+    recordStep(-1, std::string("Searching for ") + (byIndex ? "index " : "value ") + std::to_string(target));
     Node* cur = linkedList.getHead();
-    int index = 0;
+    int visualIndex = 0;
     while (cur) {
-        recordStep(index, "Checking node at index " + std::to_string(index)
+        int displayIndex = visualIndex + 1;
+        recordStep(visualIndex, "Checking node at index " + std::to_string(displayIndex)
                           + " (value: " + std::to_string(cur->value) + ")");
-        if (cur->value == value) return index;
+        if (byIndex ? (displayIndex == target) : (cur->value == target)) return visualIndex;
         cur = cur->next;
-        index++;
+        visualIndex++;
     }
     return -1;
 }
@@ -66,18 +73,18 @@ void LinkedListVisualizer::insertValue(int value) {
     updateVisualization();
 }
 
-void LinkedListVisualizer::deleteValue(int value) {
+void LinkedListVisualizer::deleteByIndex(int targetIndex) {
     steps.clear(); currentStep = 0; nodePositions.clear();
 
-    int targetIndex = buildTraverseSteps(value);
+    int foundIndex = buildTraverseSteps(targetIndex, true);
 
-    if (targetIndex != -1) {
-        recordStep(-1, "Found " + std::to_string(value) + "! Blinking before removal...",
-                   -1, targetIndex);
-        linkedList.remove(value);
-        recordStep(-1, "Successfully removed " + std::to_string(value));
+    if (foundIndex != -1) {
+        recordStep(-1, "Found index " + std::to_string(targetIndex) + "! Blinking before removal...",
+                   -1, foundIndex);
+        linkedList.remove(targetIndex);
+        recordStep(-1, "Successfully removed node at index " + std::to_string(targetIndex));
     } else {
-        recordStep(-1, "Value " + std::to_string(value) + " not found in list");
+        recordStep(-1, "Index " + std::to_string(targetIndex) + " out of bounds");
     }
 
     currentStep = 0; elapsedTime = 0.0f; blinkElapsed = 0.0f; isAnimating = true;
@@ -89,16 +96,39 @@ void LinkedListVisualizer::searchValue(int value) {
     isSearchBlinking = false; searchBlinkElapsed = 0.0f; searchBlinkDuration = 0.0f;
     isSearchHighlighting = false; searchHighlightProgress = 0.0f;
 
-    int targetIndex = buildTraverseSteps(value);
+    int foundIndex = buildTraverseSteps(value, false);
 
-    if (targetIndex != -1) {
-        recordStep(-1, "Found " + std::to_string(value) + " at index " + std::to_string(targetIndex) + "!",
-                   -1, -1, targetIndex);
+    if (foundIndex != -1) {
+        recordStep(-1, "Found " + std::to_string(value) + " at index " + std::to_string(foundIndex + 1) + "!",
+                   -1, -1, foundIndex);
     } else {
         recordStep(-1, "Value " + std::to_string(value) + " not found in list");
     }
 
     currentStep = 0; elapsedTime = 0.0f; isAnimating = true;
+    updateVisualization();
+}
+
+void LinkedListVisualizer::updateByIndex(int targetIndex, int newVal) {
+    steps.clear(); currentStep = 0; nodePositions.clear();
+    isUpdateAnimating = false; updateAnimProgress = 0.0f; updatingNodeIndex = -1;
+
+    int foundIndex = buildTraverseSteps(targetIndex, true);
+
+    if (foundIndex != -1) {
+        linkedList.update(targetIndex, newVal);
+        recordStep(foundIndex, "Successfully updated node at index " + std::to_string(targetIndex) + " to " + std::to_string(newVal),
+                   -1, -1, -1, foundIndex);
+    } else {
+        recordStep(-1, "Index " + std::to_string(targetIndex) + " out of bounds");
+    }
+
+    currentStep = 0; elapsedTime = 0.0f; isAnimating = true;
+    if (!steps.empty() && steps[0].updateIndex >= 0) {
+        isUpdateAnimating = true;
+        updateAnimProgress = 0.0f;
+        updatingNodeIndex = steps[0].updateIndex;
+    }
     updateVisualization();
 }
 
@@ -134,6 +164,13 @@ void LinkedListVisualizer::goToNextStep() {
         isSearchBlinking = true;
         searchBlinkElapsed = 0.0f;
         searchBlinkDuration = 0.0f;
+    }
+    
+    // Trigger update value animation
+    if (steps[currentStep].updateIndex >= 0) {
+        isUpdateAnimating = true;
+        updateAnimProgress = 0.0f;
+        updatingNodeIndex = steps[currentStep].updateIndex;
     }
     updateVisualization();
 }
@@ -184,6 +221,15 @@ void LinkedListVisualizer::update(float deltaTime) {
     if (isSearchHighlighting) {
         searchHighlightProgress += deltaTime * 1.5f;
         if (searchHighlightProgress >= 1.0f) { searchHighlightProgress = 1.0f; isSearchHighlighting = false; }
+    }
+
+    // Update value animation (node pops)
+    if (isUpdateAnimating) {
+        updateAnimProgress += deltaTime * 1.5f;
+        if (updateAnimProgress >= 1.0f) {
+            updateAnimProgress = 1.0f;
+            isUpdateAnimating = false;
+        }
     }
 
     // Step-based auto-advance
@@ -362,6 +408,21 @@ void LinkedListVisualizer::updateVisualization(float windowWidth, float windowHe
 
         // Color / scale
         applyNodeColor(*node, static_cast<int>(i), state, renderedRadius);
+
+        // Update animation (scale pulse and color blend)
+        if (isUpdateAnimating && static_cast<int>(i) == updatingNodeIndex) {
+            float pop = std::sin(updateAnimProgress * 3.14159f); // 0 -> 1 -> 0
+            float scale = 1.0f + 0.35f * pop;
+            renderedRadius *= scale;
+            node->setRadius(renderedRadius);
+
+            sf::Color current(255, 165, 0); // kOrange
+            sf::Color popColor(255, 215, 0); // Gold
+            std::uint8_t r = static_cast<std::uint8_t>(current.r + (popColor.r - current.r) * pop);
+            std::uint8_t g = static_cast<std::uint8_t>(current.g + (popColor.g - current.g) * pop);
+            std::uint8_t b = static_cast<std::uint8_t>(current.b + (popColor.b - current.b) * pop);
+            node->setFillColor(sf::Color(r, g, b));
+        }
 
         // Fade-out (delete)
         if (isFadingOut && static_cast<int>(i) == fadeNodeIndex) {
