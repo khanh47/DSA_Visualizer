@@ -3,8 +3,21 @@
 #include "VisualizationScene.h"
 
 namespace {
-std::vector<OperationMenuItem> getOperationMenuItems(bool isKruskalScene) {
-    if (!isKruskalScene) {
+std::vector<OperationMenuItem> getOperationMenuItems(const std::string& sceneTitle) {
+    if (sceneTitle == "Kruskal Visualization") {
+        return {
+            {"Random", OperationType::RANDOM},
+            {"Run", OperationType::RUN},
+            {"Reset", OperationType::RESET}
+        };
+    } else if (sceneTitle == "Linked List Visualization") {
+        return {
+            {"Insert", OperationType::INSERT},
+            {"Delete", OperationType::DELETE},
+            {"Search", OperationType::SEARCH},
+            {"Update", OperationType::UPDATE}
+        };
+    } else {
         return {
             {"Insert", OperationType::INSERT},
             {"Delete", OperationType::DELETE},
@@ -13,25 +26,18 @@ std::vector<OperationMenuItem> getOperationMenuItems(bool isKruskalScene) {
             {"Reset", OperationType::RESET}
         };
     }
-
-    return {
-        {"Random", OperationType::RANDOM},
-        {"Run", OperationType::RUN},
-        {"Reset", OperationType::RESET}
-    };
 }
 } // namespace
 
 OperationMenu::OperationMenu(VisualizationScene& scene)
     : scene(scene),
       position({50.0f, 90.0f}),
-      size({1300.0f, 60.0f}) {
+      size({1500.0f, 60.0f}) {
     background.setPosition(position);
     background.setSize(size);
     background.setFillColor(sf::Color::Transparent);
 
-    initMenu();
-    initInputBoxes();
+    buildUI();
 }
 
 float OperationMenu::calculateMenuStartX(std::size_t buttonCount, float spacing, float buttonWidth) const {
@@ -47,6 +53,13 @@ std::string OperationMenu::getInputValue(std::size_t index) const {
     return inputTextBoxes.getText(index);
 }
 
+std::string OperationMenu::getInsertOption() const {
+    if (insertTypeSelectBox) {
+        return insertTypeSelectBox->getSelected();
+    }
+    return "At Tail";
+}
+
 std::size_t OperationMenu::getInputCount() const {
     return inputTextBoxes.size();
 }
@@ -57,6 +70,10 @@ void OperationMenu::processEvents(const sf::Event& event) {
     }
 
     inputTextBoxes.processEvent(event);
+    
+    if (insertTypeSelectBox) {
+        insertTypeSelectBox->processEvent(event);
+    }
 }
 
 void OperationMenu::update(float deltaTime) {
@@ -69,81 +86,120 @@ void OperationMenu::render(sf::RenderWindow& window) {
     }
 
     inputTextBoxes.render(window);
-}
 
-void OperationMenu::initInputBoxes() {
-    inputTextBoxes.clear();
-
-    const float buttonWidth = 120.0f;
-    const float slotSpacing = 350.0f;
-    const float inputGap = 20.0f;
-    const float inputY = position.y;
-    const sf::Vector2f inputSize(90.0f, 42.0f);
-
-    for (std::size_t i = 0; i < menuItems.size(); ++i) {
-        if (menuItems[i].type == OperationType::RANDOM ||
-            menuItems[i].type == OperationType::RUN ||
-            menuItems[i].type == OperationType::RESET) {
-            continue;
-        }
-
-        const float baseX = position.x + static_cast<float>(i) * slotSpacing + buttonWidth + inputGap;
-
-        if (menuItems[i].type == OperationType::UPDATE) {
-            const float splitGap = 8.0f;
-            const float keyX = baseX;
-            const float valueX = keyX + inputSize.x + splitGap;
-
-            inputTextBoxes.add(std::make_unique<UI::TextBox>(
-                sf::Vector2f(keyX, inputY),
-                inputSize,
-                "",
-                20,
-                6
-            ));
-
-            inputTextBoxes.add(std::make_unique<UI::TextBox>(
-                sf::Vector2f(valueX, inputY),
-                inputSize,
-                "",
-                20,
-                6
-            ));
-            continue;
-        }
-
-        inputTextBoxes.add(std::make_unique<UI::TextBox>(
-            sf::Vector2f(baseX, inputY),
-            inputSize,
-            "",
-            20,
-            6
-        ));
+    if (insertTypeSelectBox) {
+        insertTypeSelectBox->render(window);
     }
 }
 
-void OperationMenu::initMenu() {
+void OperationMenu::buildUI() {
     menu = std::make_unique<UI::ButtonMenu>();
+    inputTextBoxes.clear();
+
+    menuItems = getOperationMenuItems(scene.getSceneTitle());
+    const bool isLinkedList = scene.getSceneTitle() == "Linked List Visualization";
 
     const float buttonWidth = 120.0f;
-    const float buttonHeight = 42.0f;
+    const float inputWidth = 90.0f;
+    const float selectWidth = 130.0f;
+    const float elementGap = 8.0f;
+    const float inputGap = 20.0f;
+    const float blockGap = isLinkedList ? 100.0f : 75.0f;
+    const float height = 42.0f;
+    const float currentY = position.y;
 
-    const bool isKruskalScene = scene.getSceneTitle() == "Kruskal Visualization";
-    const float spacing = isKruskalScene ? 150.0f : 350.0f;
-    menuItems = getOperationMenuItems(isKruskalScene);
-    const float startX = position.x;
-    const float startY = position.y;
+    float totalWidth = 0.0f;
+    for (std::size_t i = 0; i < menuItems.size(); ++i) {
+        const auto& item = menuItems[i];
+        totalWidth += buttonWidth;
 
-    menu->setLayoutProperties(
-        {startX, startY},
-        {buttonWidth, buttonHeight},
-        spacing,
-        true,
-        sf::Color(50, 66, 96),
-        20
-    );
+        if (item.type != OperationType::RANDOM &&
+            item.type != OperationType::RUN &&
+            item.type != OperationType::RESET) {
+            
+            totalWidth += inputGap;
 
-    for (const OperationMenuItem& item : menuItems) {
-        menu->addButtonAuto(item.label, createOperationCommand(&scene, this, item.type));
+            if (item.type == OperationType::UPDATE) {
+                totalWidth += inputWidth * 2.0f + elementGap;
+            } else if (item.type == OperationType::INSERT) {
+                totalWidth += inputWidth;
+                if (isLinkedList) {
+                    totalWidth += elementGap + selectWidth;
+                }
+            } else {
+                totalWidth += inputWidth;
+            }
+        }
+
+        if (i < menuItems.size() - 1) {
+            totalWidth += blockGap;
+        }
+    }
+
+    float currentX = position.x + std::max(0.0f, (size.x - totalWidth) * 0.5f);
+
+    for (const auto& item : menuItems) {
+        auto button = std::make_shared<UI::Button>(
+            sf::Vector2f(currentX, currentY),
+            sf::Vector2f(buttonWidth, height),
+            sf::Color(50, 66, 96),
+            item.label,
+            20
+        );
+        button->setCommand(createOperationCommand(&scene, this, item.type));
+        menu->addButton(button);
+        currentX += buttonWidth;
+
+        if (item.type == OperationType::RANDOM ||
+            item.type == OperationType::RUN ||
+            item.type == OperationType::RESET) {
+            currentX += blockGap;
+            continue;
+        }
+
+        currentX += inputGap;
+
+        if (item.type == OperationType::UPDATE) {
+            inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                sf::Vector2f(currentX, currentY),
+                sf::Vector2f(inputWidth, height),
+                "", 20, 6
+            ));
+            currentX += inputWidth + elementGap;
+
+            inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                sf::Vector2f(currentX, currentY),
+                sf::Vector2f(inputWidth, height),
+                "", 20, 6
+            ));
+            currentX += inputWidth;
+        } else if (item.type == OperationType::INSERT) {
+            inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                sf::Vector2f(currentX, currentY),
+                sf::Vector2f(inputWidth, height),
+                "", 20, 6
+            ));
+            currentX += inputWidth;
+
+            if (isLinkedList) {
+                currentX += elementGap;
+                insertTypeSelectBox = std::make_unique<UI::SelectBox>(
+                    sf::Vector2f(currentX, currentY),
+                    sf::Vector2f(selectWidth, height),
+                    std::vector<std::string>{"At Tail", "At Head"},
+                    20
+                );
+                currentX += selectWidth;
+            }
+        } else {
+            inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                sf::Vector2f(currentX, currentY),
+                sf::Vector2f(inputWidth, height),
+                "", 20, 6
+            ));
+            currentX += inputWidth;
+        }
+
+        currentX += blockGap;
     }
 }

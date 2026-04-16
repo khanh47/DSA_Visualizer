@@ -14,6 +14,7 @@ public:
     ~LinkedList();
 
     void insert(int value);
+    void insertAtHead(int value);
     bool search(int value);
     void remove(int index);
     void update(int index, int newVal);
