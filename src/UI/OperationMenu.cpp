@@ -97,7 +97,7 @@ void OperationMenu::initInputBoxes() {
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(keyX, inputY),
                 inputSize,
-                "Key",
+                "",
                 20,
                 6
             ));
@@ -105,7 +105,7 @@ void OperationMenu::initInputBoxes() {
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(valueX, inputY),
                 inputSize,
-                "Value",
+                "",
                 20,
                 6
             ));
