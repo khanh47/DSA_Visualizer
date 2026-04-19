@@ -26,10 +26,10 @@ MenuScene::MenuScene(SceneManager& sceneManager) : manager(sceneManager) {
         28 // size of text
     );
 
-    btnMenu->addButtonAuto("Linked List", createLinkedListSceneCommand(manager));
-    btnMenu->addButtonAuto("Hash Table", createHashTableSceneCommand(manager));
-    btnMenu->addButtonAuto("Trie", createTrieSceneCommand(manager));
-    btnMenu->addButtonAuto("Kruskal", createKruskalSceneCommand(manager));
+    btnMenu->addButtonAuto("Linked List", createLinkedListSceneCommand(manager), "IconList");
+    btnMenu->addButtonAuto("Hash Table", createHashTableSceneCommand(manager), "IconHash");
+    btnMenu->addButtonAuto("Trie", createTrieSceneCommand(manager), "IconTrie");
+    btnMenu->addButtonAuto("Kruskal", createKruskalSceneCommand(manager), "IconKruskal");
 }
 
 void MenuScene::processEvents(const sf::Event& event) {
