@@ -97,4 +97,10 @@ ResourceManager::~ResourceManager() {
 
 ResourceManager::ResourceManager() {
 	_preLoadFont("assets/fonts/Roboto-VariableFont_wdth,wght.ttf", "Roboto");
+
+	    // Load icons for the menu - Add these lines:
+    _preLoadTexture("assets/icons/linkedlist.png", "IconList");
+    _preLoadTexture("assets/icons/hashtable.png", "IconHash");
+    _preLoadTexture("assets/icons/trie.png", "IconTrie");
+    _preLoadTexture("assets/icons/kruskal.png", "IconKruskal");
 }

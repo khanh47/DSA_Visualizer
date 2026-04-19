@@ -32,10 +32,10 @@ public:
                              unsigned int defaultCharSize);
 
     void addButton(const std::shared_ptr<Button>& button);
-    void addButtonAuto(const std::string& text, std::unique_ptr<ICommand> command);
+    void addButtonAuto(const std::string& text, std::unique_ptr<ICommand> command, const std::string& iconAlias = "");
     void addButtonAuto(const std::string& text, unsigned int charSize, 
                        std::unique_ptr<ICommand> command, 
-                       const sf::Color& color = sf::Color(100, 149, 237));
+                       const sf::Color& color = sf::Color(100, 149, 237), const std::string& iconAlias = "");
     void processEvent(const sf::Event& event);
     void render(sf::RenderWindow& window);
 

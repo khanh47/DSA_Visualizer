@@ -63,33 +63,41 @@ void Button::updateRoundedShape(const sf::Vector2f& position, const sf::Vector2f
 }
 
 void Button::updateLayout(const sf::Vector2f& position, const sf::Vector2f& size) {
+    float centerX = position.x + size.x / 2.0f;
+
+    // 1. Setup Label Origin
     sf::FloatRect textBounds = label.getLocalBounds();
     label.setOrigin({textBounds.position.x + textBounds.size.x / 2.0f,
                      textBounds.position.y + textBounds.size.y / 2.0f});
 
-    if (icon.has_value() && !label.getString().isEmpty()) {
-        sf::FloatRect iconBounds = icon->getLocalBounds();
-        float scaledIconWidth = iconBounds.size.x * icon->getScale().x;
-        float spacing = 10.0f; 
-        
-        float totalWidth = scaledIconWidth + spacing + textBounds.size.x;
-        float startX = position.x + (size.x - totalWidth) / 2.0f;
-        float centerY = position.y + size.y / 2.0f;
+    // 2. Position Label at a FIXED vertical coordinate
+    // We place the text at 82% of the button's height. 
+    // This ensures all button texts are perfectly aligned horizontally.
+    float fixedLabelY = position.y + (size.y * 0.82f);
+    label.setPosition({centerX, fixedLabelY});
 
+    if (icon.has_value()) {
+        sf::FloatRect iconBounds = icon->getLocalBounds();
+        
+        // 3. Scale icon to fit the reserved upper area
+        // We allow the icon to occupy 75% of width and 55% of height
+        float maxIconW = size.x * 0.75f; 
+        float maxIconH = size.y * 0.55f;
+
+        float scale = std::min(maxIconW / iconBounds.size.x, maxIconH / iconBounds.size.y);
+        icon->setScale({scale, scale});
+
+        // 4. Position Icon centered in the UPPER area of the button
+        // We place the icon center at 40% of the button's height
+        float fixedIconCenterY = position.y + (size.y * 0.40f);
+        
         icon->setOrigin({iconBounds.position.x + iconBounds.size.x / 2.0f,
                          iconBounds.position.y + iconBounds.size.y / 2.0f});
-        icon->setPosition({startX + scaledIconWidth / 2.0f, centerY});
+        icon->setPosition({centerX, fixedIconCenterY});
 
-        label.setPosition({startX + scaledIconWidth + spacing + textBounds.size.x / 2.0f, centerY});
-
-    } else if (icon.has_value()) {
-        sf::FloatRect iconBounds = icon->getLocalBounds();
-        icon->setOrigin({iconBounds.position.x + iconBounds.size.x / 2.0f,
-                         iconBounds.position.y + iconBounds.size.y / 2.0f});
-        icon->setPosition({position.x + size.x / 2.0f, position.y + size.y / 2.0f});
-        
     } else {
-        label.setPosition({position.x + size.x / 2.0f, position.y + size.y / 2.0f});
+        // If there's no icon (e.g. Back button), center the text perfectly in the button
+        label.setPosition({centerX, position.y + size.y / 2.0f});
     }
 }
 
