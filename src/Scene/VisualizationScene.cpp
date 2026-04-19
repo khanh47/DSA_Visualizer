@@ -13,7 +13,13 @@ VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     statusText.setCharacterSize(28);
     statusText.setFillColor(sf::Color(30, 30, 30));
     statusText.setStyle(sf::Text::Bold);
-    backButton = std::unique_ptr<UI::Button>(new UI::Button({16.0f, 20.0f}, {36.0f, 36.0f}, sf::Color(8, 28, 62), "<", 30));
+    backButton = std::make_unique<UI::Button>(
+    sf::Vector2f(16.0f, 20.0f), 
+    sf::Vector2f(36.0f, 36.0f), 
+    sf::Color(8, 28, 62), 
+    "<", 
+    30
+);
     backButton->setCommand(createPopSceneCommand(manager));
 
     playbackWidget = std::make_unique<UI::PlaybackControlWidget>();
@@ -97,6 +103,7 @@ void VisualizationScene::update(float deltaTime) {
         }
 */
     }
+
 }
 
 void VisualizationScene::render(sf::RenderWindow& window) {
@@ -109,6 +116,8 @@ void VisualizationScene::render(sf::RenderWindow& window) {
     if (playbackWidget) {
         playbackWidget->layout(windowSize);
     }
+       // The layout should be set once in the constructor or on Resize event, 
+    // not every single frame here.
 
     if (visualizer) {
         visualizer->setDragRegion(topBarHeight, bottomBarY);
