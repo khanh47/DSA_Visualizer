@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ResourceManager.h"
+#include "RoundedRect.h"
 
 namespace {
 
@@ -435,7 +436,20 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
 
     const float leftContentX = stateLeftX;
     const float leftContentY = stateTopY;
-    const float rowHeight = 24.0f;
+    const float panelWidth = 340.0f;
+    const float panelGap = 14.0f;
+    const float rowHeight = 30.0f;
+    const float cornerRadius = 10.0f;
+
+    const sf::Color panelBg(243, 246, 252, 236);
+    const sf::Color panelOutline(160, 176, 205, 210);
+    const sf::Color titleColor(37, 49, 74);
+    const sf::Color textColor(44, 57, 82);
+    const sf::Color gridColor(187, 199, 222, 180);
+    const sf::Color headerBg(226, 234, 248, 220);
+    const sf::Color altRowBg(238, 244, 255, 90);
+    const sf::Color currentRowBg(255, 232, 206, 220);
+    const sf::Color currentRowText(220, 120, 25);
 
     const auto drawText = [&](const std::string& text,
                               unsigned int size,
@@ -451,7 +465,14 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
         window.draw(t);
     };
 
-    drawText("Looking at disjoint set", 26, {leftContentX, leftContentY}, sf::Color(40, 50, 70), true);
+    const auto drawPanel = [&](const sf::Vector2f& pos, const sf::Vector2f& size) {
+        sf::ConvexShape panel = UI::makeRoundedRect(size, cornerRadius);
+        panel.setPosition(pos);
+        panel.setFillColor(panelBg);
+        panel.setOutlineThickness(1.5f);
+        panel.setOutlineColor(panelOutline);
+        window.draw(panel);
+    };
 
     std::string findLine;
     if (hasCurrentEdge) {
@@ -462,21 +483,6 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     } else {
         findLine = "No current edge";
     }
-    drawText(findLine, 20, {leftContentX, leftContentY + 45.0f}, sf::Color(30, 40, 60));
-
-    drawText("Vertex      Set ID", 26, {leftContentX, leftContentY + 80.0f}, sf::Color(30, 40, 60), true);
-
-    for (int node = 0; node < nodeCount; ++node) {
-        const float rowY = leftContentY + 120.0f + static_cast<float>(node) * rowHeight;
-
-        const bool isCurrentVertex = hasCurrentEdge && (node == currentEdge.u || node == currentEdge.v);
-        const sf::Color rowColor = isCurrentVertex ? sf::Color(220, 120, 25) : sf::Color(30, 40, 60);
-        drawText(makeVertexLabel(node), 20, {leftContentX + 10.0f, rowY}, rowColor);
-        drawText(std::to_string(componentLabels[static_cast<std::size_t>(node)]), 20, {leftContentX + 116.0f, rowY}, rowColor);
-    }
-
-    const float queueX = leftContentX;
-    const float queueY = leftContentY + 150.0f + static_cast<float>(nodeCount) * rowHeight;
 
     std::string currentEdgeLine;
     if (hasCurrentEdge) {
@@ -484,33 +490,108 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     } else {
         currentEdgeLine = "Current edge: done";
     }
-    drawText(currentEdgeLine, 20, {queueX, queueY}, sf::Color(30, 40, 60));
-    drawText("List of edges:", 20, {queueX, queueY + 30.0f}, sf::Color(30, 40, 60), true);
 
-    const float queueStartY = queueY + 60.0f;
-    for (std::size_t i = 0; i < edges.size(); ++i) {
+    // Status panel
+    const float statusHeight = 92.0f;
+    drawPanel({leftContentX, leftContentY}, {panelWidth, statusHeight});
+    drawText("Looking at disjoint set", 24, {leftContentX + 14.0f, leftContentY + 10.0f}, titleColor, true);
+    drawText(findLine, 17, {leftContentX + 14.0f, leftContentY + 52.0f}, textColor);
+
+    // Vertex / set-id table panel
+    const float dsuPanelY = leftContentY + statusHeight + panelGap;
+    const float dsuTitleBlockHeight = 34.0f;
+    const float dsuHeaderHeight = 30.0f;
+    const float dsuTableHeight = dsuHeaderHeight + static_cast<float>(nodeCount) * rowHeight;
+    const float dsuPanelHeight = dsuTitleBlockHeight + dsuTableHeight + 14.0f;
+    drawPanel({leftContentX, dsuPanelY}, {panelWidth, dsuPanelHeight});
+    drawText("Vertex / Set ID", 19, {leftContentX + 14.0f, dsuPanelY + 8.0f}, titleColor, true);
+
+    const float dsuTableX = leftContentX + 10.0f;
+    const float dsuTableY = dsuPanelY + dsuTitleBlockHeight;
+    const float dsuTableW = panelWidth - 20.0f;
+    const float dsuSplitX = dsuTableX + dsuTableW * 0.54f;
+
+    sf::RectangleShape dsuHeaderBg({dsuTableW, dsuHeaderHeight});
+    dsuHeaderBg.setPosition({dsuTableX, dsuTableY});
+    dsuHeaderBg.setFillColor(headerBg);
+    window.draw(dsuHeaderBg);
+
+    drawText("Vertex", 16, {dsuTableX + 10.0f, dsuTableY + 6.0f}, titleColor, true);
+    drawText("Set ID", 16, {dsuSplitX + 10.0f, dsuTableY + 6.0f}, titleColor, true);
+
+    sf::RectangleShape dsuVertical({1.0f, dsuTableHeight});
+    dsuVertical.setPosition({dsuSplitX, dsuTableY});
+    dsuVertical.setFillColor(gridColor);
+    window.draw(dsuVertical);
+
+    for (int node = 0; node < nodeCount; ++node) {
+        const float rowY = dsuTableY + dsuHeaderHeight + static_cast<float>(node) * rowHeight;
+        const bool isCurrentVertex = hasCurrentEdge && (node == currentEdge.u || node == currentEdge.v);
+
+        sf::RectangleShape rowBg({dsuTableW, rowHeight});
+        rowBg.setPosition({dsuTableX, rowY});
+        rowBg.setFillColor(isCurrentVertex ? currentRowBg : (node % 2 == 0 ? altRowBg : sf::Color::Transparent));
+        window.draw(rowBg);
+
+        sf::RectangleShape rowLine({dsuTableW, 1.0f});
+        rowLine.setPosition({dsuTableX, rowY});
+        rowLine.setFillColor(gridColor);
+        window.draw(rowLine);
+
+        const sf::Color rowTextColor = isCurrentVertex ? currentRowText : textColor;
+        drawText(makeVertexLabel(node), 18, {dsuTableX + 10.0f, rowY + 5.0f}, rowTextColor);
+        drawText(std::to_string(componentLabels[static_cast<std::size_t>(node)]), 18, {dsuSplitX + 10.0f, rowY + 5.0f}, rowTextColor);
+    }
+
+    // Edge list panel
+    const float edgePanelY = dsuPanelY + dsuPanelHeight + panelGap;
+    const float edgePanelBottom = std::max(edgePanelY + 200.0f, dragRegionBottomY - 10.0f);
+    const float edgePanelHeight = edgePanelBottom - edgePanelY;
+    drawPanel({leftContentX, edgePanelY}, {panelWidth, edgePanelHeight});
+    drawText("List of edges", 19, {leftContentX + 14.0f, edgePanelY + 8.0f}, titleColor, true);
+    drawText(currentEdgeLine, 16, {leftContentX + 14.0f, edgePanelY + 34.0f}, textColor);
+
+    const float edgeTableX = leftContentX + 10.0f;
+    const float edgeTableY = edgePanelY + 62.0f;
+    const float edgeTableW = panelWidth - 20.0f;
+    const float edgeHeaderHeight = 30.0f;
+    const float edgeSplitX = edgeTableX + edgeTableW * 0.72f;
+
+    sf::RectangleShape edgeHeaderBg({edgeTableW, edgeHeaderHeight});
+    edgeHeaderBg.setPosition({edgeTableX, edgeTableY});
+    edgeHeaderBg.setFillColor(headerBg);
+    window.draw(edgeHeaderBg);
+
+    drawText("Edge", 16, {edgeTableX + 10.0f, edgeTableY + 6.0f}, titleColor, true);
+    drawText("Weight", 16, {edgeSplitX + 10.0f, edgeTableY + 6.0f}, titleColor, true);
+
+    const float edgeRowsArea = std::max(0.0f, edgePanelHeight - 62.0f - edgeHeaderHeight - 10.0f);
+    const std::size_t maxRows = static_cast<std::size_t>(std::max(1, static_cast<int>(edgeRowsArea / rowHeight)));
+    const std::size_t rowsToDraw = std::min(edges.size(), maxRows);
+
+    sf::RectangleShape edgeVertical({1.0f, edgeHeaderHeight + static_cast<float>(rowsToDraw) * rowHeight});
+    edgeVertical.setPosition({edgeSplitX, edgeTableY});
+    edgeVertical.setFillColor(gridColor);
+    window.draw(edgeVertical);
+
+    for (std::size_t i = 0; i < rowsToDraw; ++i) {
         const auto& edge = edges[i];
         const bool isCurrentQueueEdge = hasCurrentEdge && i == displayedEdgeIndex;
-        
-        sf::Text edgeText(*font, makeEdgeLabel(edge) + "   " + std::to_string(edge.w), 20);
-        edgeText.setFillColor(isCurrentQueueEdge ? sf::Color(220, 120, 25) : sf::Color(35, 45, 60));
-        edgeText.setPosition({queueX, queueStartY + static_cast<float>(i) * 30.0f});
+        const float rowY = edgeTableY + edgeHeaderHeight + static_cast<float>(i) * rowHeight;
 
-        if (isCurrentQueueEdge) {
-            const sf::FloatRect textBounds = edgeText.getLocalBounds();
-            const float paddingX = 6.0f;
-            const float paddingY = 4.0f;
-            sf::RectangleShape highlight({textBounds.size.x + paddingX * 2.0f, textBounds.size.y + paddingY * 2.0f});
-            highlight.setPosition({
-                edgeText.getPosition().x + textBounds.position.x - paddingX,
-                edgeText.getPosition().y + textBounds.position.y - paddingY
-            });
-            highlight.setFillColor(sf::Color(255, 232, 206));
-            highlight.setOutlineThickness(1.5f);
-            highlight.setOutlineColor(sf::Color(232, 140, 40));
-            window.draw(highlight);
-        }
-        window.draw(edgeText);
+        sf::RectangleShape rowBg({edgeTableW, rowHeight});
+        rowBg.setPosition({edgeTableX, rowY});
+        rowBg.setFillColor(isCurrentQueueEdge ? currentRowBg : (i % 2 == 0 ? altRowBg : sf::Color::Transparent));
+        window.draw(rowBg);
+
+        sf::RectangleShape rowLine({edgeTableW, 1.0f});
+        rowLine.setPosition({edgeTableX, rowY});
+        rowLine.setFillColor(gridColor);
+        window.draw(rowLine);
+
+        const sf::Color rowTextColor = isCurrentQueueEdge ? currentRowText : textColor;
+        drawText(makeEdgeLabel(edge), 18, {edgeTableX + 10.0f, rowY + 5.0f}, rowTextColor);
+        drawText(std::to_string(edge.w), 18, {edgeSplitX + 10.0f, rowY + 5.0f}, rowTextColor);
     }
 }
 
@@ -540,4 +621,41 @@ void KruskalVisualizer::goToFinalStep() {
     currentEdgeIndex = graph.getEdges().size();
     animationElapsed = 0.0f;
     syncAlgorithmState();
+}
+
+int KruskalVisualizer::getCurrentPseudocodeLine() const {
+    const auto& edges = graph.getEdges();
+    const int nodeCount = graph.getNumNodes();
+
+    if (!animationReady || edges.empty() || nodeCount <= 0) {
+        return -1;
+    }
+
+    if (currentEdgeIndex >= edges.size()) {
+        return 6;
+    }
+
+    if (currentParents.empty()) {
+        return 2;
+    }
+
+    const auto& edge = edges[currentEdgeIndex];
+    auto findRoot = [&](int node) {
+        int root = node;
+        while (root >= 0 && root < static_cast<int>(currentParents.size()) && currentParents[static_cast<std::size_t>(root)] >= 0) {
+            root = currentParents[static_cast<std::size_t>(root)];
+        }
+        return root;
+    };
+
+    const bool canJoin = findRoot(edge.u) != findRoot(edge.v);
+    if (!canJoin) {
+        return 2;
+    }
+
+    if (currentMstEdge + 1 >= static_cast<std::size_t>(std::max(0, nodeCount - 1))) {
+        return 5;
+    }
+
+    return 4;
 }

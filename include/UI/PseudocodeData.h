@@ -58,4 +58,17 @@ inline const std::vector<std::string> kLinkedListUpdate = {
     "cur->value = newVal",         // 3
 };
 
+// ── Kruskal ─────────────────────────────────────────────────────────────
+
+inline const std::string kKruskalTitle = "KRUSKAL MST";
+inline const std::vector<std::string> kKruskalMain = {
+    "sort edges by weight",               // 0
+    "init DSU for all vertices",          // 1
+    "for each edge (u, v, w) in edges",   // 2
+    "    if find(u) != find(v)",          // 3
+    "        union(u, v); add edge",      // 4
+    "if mst.size == n - 1: stop",         // 5
+    "return mst",                         // 6
+};
+
 } // namespace Pseudocode
