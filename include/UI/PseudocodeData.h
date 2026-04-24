@@ -41,11 +41,11 @@ inline const std::vector<std::string> kLinkedListSearch = {
 
 inline const std::string kLinkedListDeleteTitle = "DELETE";
 inline const std::vector<std::string> kLinkedListDelete = {
-    "if index == 0",               // 0
+    "if index == 1",               // 0
     "    head = head->next",       // 1
     "    return",                   // 2
     "cur = head",                  // 3
-    "for i = 0 to index - 2",     // 4
+    "for i = 1 to index - 2",     // 4
     "    cur = cur->next",         // 5
     "cur->next = cur->next->next", // 6
 };
@@ -53,7 +53,7 @@ inline const std::vector<std::string> kLinkedListDelete = {
 inline const std::string kLinkedListUpdateTitle = "UPDATE";
 inline const std::vector<std::string> kLinkedListUpdate = {
     "cur = head",                  // 0
-    "for i = 0 to index - 1",     // 1
+    "for i = 1 to index - 1",     // 1
     "    cur = cur->next",         // 2
     "cur->value = newVal",         // 3
 };
