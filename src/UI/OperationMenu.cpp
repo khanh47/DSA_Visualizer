@@ -163,21 +163,21 @@ void OperationMenu::buildUI() {
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                "", 20, 6
+                isLinkedList ? "Index" : "Old", 20, 6
             ));
             currentX += inputWidth + elementGap;
 
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                "", 20, 6
+                "New", 20, 6
             ));
             currentX += inputWidth;
         } else if (item.type == OperationType::INSERT) {
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                "", 20, 6
+                "Value", 20, 6
             ));
             currentX += inputWidth;
 
@@ -192,10 +192,14 @@ void OperationMenu::buildUI() {
                 currentX += selectWidth;
             }
         } else {
+            std::string placeholder = "Value";
+            if (item.type == OperationType::DELETE && isLinkedList) {
+                placeholder = "Index";
+            }
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                "", 20, 6
+                placeholder, 20, 6
             ));
             currentX += inputWidth;
         }

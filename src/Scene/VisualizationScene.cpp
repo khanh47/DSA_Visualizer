@@ -41,6 +41,9 @@ VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     playbackWidget->setOnFinalStep([this]() {
         onGoToFinalStep();
     });
+
+    // Pseudocode panel (shared by all scenes)
+    pseudocodePanel = std::make_unique<UI::PseudocodePanel>();
 }
 
 void VisualizationScene::initializeOperationMenu() {
@@ -70,12 +73,21 @@ void VisualizationScene::processEvents(const sf::Event& event) {
         playbackWidget->processEvent(event);
     }
 
+    if (pseudocodePanel) {
+        pseudocodePanel->processEvent(event);
+    }
+
     // Process back button last because it can pop (destroy) this scene.
     backButton->processEvent(event);
 }
 
 void VisualizationScene::update(float deltaTime) {
     if (visualizer) visualizer->update(deltaTime);
+
+    // Sync pseudocode panel highlighted line with visualizer
+    if (pseudocodePanel && visualizer) {
+        pseudocodePanel->setHighlightedLine(visualizer->getCurrentPseudocodeLine());
+    }
 
     if (currentStatusIndex != -1 && currentStatusIndex < (int)statusQueue.size() - 1) {
         
@@ -143,6 +155,11 @@ void VisualizationScene::render(sf::RenderWindow& window) {
 
     if (playbackWidget) {
         playbackWidget->render(window);
+    }
+
+    // Pseudocode panel (rendered on top of visualization area)
+    if (pseudocodePanel) {
+        pseudocodePanel->render(window);
     }
 
     sf::Font &font = ResourceManager::getInstance().getFont("Roboto");
