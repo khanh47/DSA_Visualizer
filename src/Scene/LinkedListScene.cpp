@@ -1,5 +1,6 @@
 #include "LinkedListScene.h"
 #include "LinkedListVisualizer.h"
+#include "PseudocodeData.h"
 #include "ResourceManager.h"
 #include <iostream>
 
@@ -19,7 +20,20 @@ void LinkedListScene::onInsert(const std::string& value) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
                 std::string option = operationMenu ? operationMenu->getInsertOption() : "";
-                llVisualizer->insertValue(val, option == "At Head");
+                bool atHead = (option == "At Head");
+
+                // Set pseudocode before running the operation
+                if (pseudocodePanel) {
+                    if (atHead) {
+                        pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertHeadTitle,
+                                                       Pseudocode::kLinkedListInsertHead);
+                    } else {
+                        pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertTailTitle,
+                                                       Pseudocode::kLinkedListInsertTail);
+                    }
+                }
+
+                llVisualizer->insertValue(val, atHead);
             }
         }
     } catch (const std::exception& e) {
@@ -32,6 +46,10 @@ void LinkedListScene::onSearch(const std::string& value) {
         if (visualizer) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
+                if (pseudocodePanel) {
+                    pseudocodePanel->setPseudocode(Pseudocode::kLinkedListSearchTitle,
+                                                   Pseudocode::kLinkedListSearch);
+                }
                 llVisualizer->searchValue(val);
             }
         }
@@ -46,6 +64,10 @@ void LinkedListScene::onDelete(const std::string& value) {
         if (visualizer) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
+                if (pseudocodePanel) {
+                    pseudocodePanel->setPseudocode(Pseudocode::kLinkedListDeleteTitle,
+                                                   Pseudocode::kLinkedListDelete);
+                }
                 llVisualizer->deleteByIndex(index);
             }
         }
@@ -61,6 +83,10 @@ void LinkedListScene::onUpdate(const std::string& key, const std::string& value)
         if (visualizer) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
+                if (pseudocodePanel) {
+                    pseudocodePanel->setPseudocode(Pseudocode::kLinkedListUpdateTitle,
+                                                   Pseudocode::kLinkedListUpdate);
+                }
                 llVisualizer->updateByIndex(index, newVal);
             }
         }

@@ -23,12 +23,16 @@ public:
 private:
     void refreshDisplay();
 
-    sf::RectangleShape box;
+    sf::ConvexShape box;           // rounded box
     sf::Text textDrawable;
     std::string text;
     std::string description;
     bool focused;
     std::size_t maxChars;
+
+    sf::Vector2f boxPosition;
+    sf::Vector2f boxSize;
+    static constexpr float kCornerRadius = 8.0f;
 };
 
 } // namespace UI

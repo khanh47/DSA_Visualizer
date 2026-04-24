@@ -1,4 +1,5 @@
 #include "TextBox.h"
+#include "RoundedRect.h"
 #include "ResourceManager.h"
 
 namespace UI {
@@ -11,9 +12,12 @@ TextBox::TextBox(const sf::Vector2f& position,
     : textDrawable(ResourceManager::getInstance().getFont("Roboto"), "", charSize),
       description(description),
       focused(false),
-      maxChars(maxChars) {
+      maxChars(maxChars),
+      boxPosition(position),
+      boxSize(size) {
+
+    box = makeRoundedRect(size, kCornerRadius);
     box.setPosition(position);
-    box.setSize(size);
     box.setFillColor(sf::Color::White);
     box.setOutlineThickness(2.0f);
     box.setOutlineColor(sf::Color(120, 150, 230));
@@ -26,7 +30,9 @@ void TextBox::processEvent(const sf::Event& event) {
         if (mouseEvent->button == sf::Mouse::Button::Left) {
             const sf::Vector2f mousePos(static_cast<float>(mouseEvent->position.x),
                                         static_cast<float>(mouseEvent->position.y));
-            focused = box.getGlobalBounds().contains(mousePos);
+            // Hit-test using stored position/size
+            sf::FloatRect bounds(boxPosition, boxSize);
+            focused = bounds.contains(mousePos);
             box.setOutlineColor(focused ? sf::Color(152, 180, 255) : sf::Color(120, 150, 230));
         }
     }
@@ -88,9 +94,8 @@ void TextBox::refreshDisplay() {
     textDrawable.setOrigin({bounds.position.x + bounds.size.x / 2.0f,
                             bounds.position.y + bounds.size.y / 2.0f});
 
-    const sf::Vector2f pos = box.getPosition();
-    const sf::Vector2f size = box.getSize();
-    textDrawable.setPosition({pos.x + size.x / 2.0f, pos.y + size.y / 2.0f});
+    textDrawable.setPosition({boxPosition.x + boxSize.x / 2.0f,
+                              boxPosition.y + boxSize.y / 2.0f});
 }
 
 } // namespace UI

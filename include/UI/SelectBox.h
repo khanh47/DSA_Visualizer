@@ -22,16 +22,21 @@ public:
 private:
     void updateMainText();
 
-    sf::RectangleShape mainBox;
+    sf::ConvexShape mainBox;         // rounded main box
     sf::Text mainText;
     sf::Text arrowText;
 
+    sf::Vector2f boxPosition;
+    sf::Vector2f boxSize;
+    static constexpr float kCornerRadius = 8.0f;
+
     std::vector<std::string> options;
-    std::vector<sf::RectangleShape> optionBoxes;
+    std::vector<sf::ConvexShape> optionBoxes;  // rounded option boxes
     std::vector<sf::Text> optionTexts;
 
     bool expanded;
     std::size_t selectedIndex;
+    int hoveredIndex = -1;  // index of option currently hovered, -1 = none
 };
 
 } // namespace UI

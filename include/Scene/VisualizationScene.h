@@ -5,6 +5,7 @@
 #include "SceneManager.h"
 #include "OperationMenu.h"
 #include "PlaybackControlWidget.h"
+#include "PseudocodePanel.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
@@ -57,6 +58,7 @@ protected:
     std::unique_ptr<OperationMenu> operationMenu;
     std::unique_ptr<BaseVisualizer> visualizer;
     std::unique_ptr<UI::PlaybackControlWidget> playbackWidget;
+    std::unique_ptr<UI::PseudocodePanel> pseudocodePanel;
 
     std::vector<std::string> statusQueue;
     float statusTimer = 0.0f;

@@ -15,6 +15,7 @@ struct InsertStep {
     int blinkIndex = -1;       // Index of node to blink green/orange before deletion
     int searchFoundIndex = -1; // Index of node found by search (scale up + color transition)
     int updateIndex = -1;      // Index of node being updated
+    int pseudocodeLine = -1;   // Which pseudocode line to highlight (-1 = none)
     std::string description;
 };
 
@@ -35,6 +36,7 @@ public:
     void goToPreviousStep() override;
     void goToNextStep() override;
     void goToFinalStep() override;
+    int getCurrentPseudocodeLine() const override;
 
     void insertValue(int value, bool atHead = false);
     void deleteByIndex(int index);
@@ -93,7 +95,7 @@ private:
 
     void updateVisualization(float windowWidth = 800.0f, float windowHeight = 600.0f);
     std::vector<int> listToVector() const;
-    void recordStep(int highlightedIndex, const std::string& description, int successIndex = -1, int blinkIndex = -1, int searchFoundIndex = -1, int updateIndex = -1);
+    void recordStep(int highlightedIndex, const std::string& description, int successIndex = -1, int blinkIndex = -1, int searchFoundIndex = -1, int updateIndex = -1, int pseudocodeLine = -1);
 
     // Helpers (refactored from render / updateVisualization)
     void applyNodeColor(UI::VisualNode& node, int index, const InsertStep& step, float& renderedRadius);

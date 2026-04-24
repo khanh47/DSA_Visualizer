@@ -19,6 +19,9 @@ public:
     virtual void goToNextStep() {}
     virtual void goToFinalStep() {}
 
+    // Pseudocode line tracking (for PseudocodePanel sync)
+    virtual int getCurrentPseudocodeLine() const { return -1; }
+
     // Zoom and pan helpers
     float getZoomLevel() const { return zoomLevel; }
     sf::Vector2f getPanOffset() const { return panOffset; }

@@ -19,7 +19,7 @@ std::vector<int> LinkedListVisualizer::listToVector() const {
 }
 
 void LinkedListVisualizer::recordStep(int highlightedIndex, const std::string& description,
-                                       int successIndex, int blinkIndex, int searchFoundIndex, int updateIndex) {
+                                       int successIndex, int blinkIndex, int searchFoundIndex, int updateIndex, int pseudocodeLine) {
     InsertStep step;
     step.nodeValues       = listToVector();
     step.highlightedIndex = highlightedIndex;
@@ -27,8 +27,15 @@ void LinkedListVisualizer::recordStep(int highlightedIndex, const std::string& d
     step.blinkIndex       = blinkIndex;
     step.searchFoundIndex = searchFoundIndex;
     step.updateIndex      = updateIndex;
+    step.pseudocodeLine   = pseudocodeLine;
     step.description      = description;
     steps.push_back(step);
+}
+
+int LinkedListVisualizer::getCurrentPseudocodeLine() const {
+    if (currentStep >= 0 && currentStep < static_cast<int>(steps.size()))
+        return steps[currentStep].pseudocodeLine;
+    return -1;
 }
 
 int LinkedListVisualizer::buildTraverseSteps(int target, bool byIndex) {
@@ -37,14 +44,32 @@ int LinkedListVisualizer::buildTraverseSteps(int target, bool byIndex) {
         return -1;
     }
 
-    recordStep(-1, std::string("Searching for ") + (byIndex ? "index " : "value ") + std::to_string(target));
+    // pseudocodeLine 0 = "cur = head"
+    recordStep(-1, std::string("Start: cur = head"),
+               -1, -1, -1, -1, 0);
     Node* cur = linkedList.getHead();
     int visualIndex = 0;
     while (cur) {
         int displayIndex = visualIndex + 1;
-        recordStep(visualIndex, "Checking node at index " + std::to_string(displayIndex)
-                          + " (value: " + std::to_string(cur->value) + ")");
-        if (byIndex ? (displayIndex == target) : (cur->value == target)) return visualIndex;
+        bool matched = byIndex ? (displayIndex == target) : (cur->value == target);
+
+        // Sub-step 1: while cur != null  (line 1)
+        recordStep(visualIndex, "Visit node at index " + std::to_string(displayIndex),
+                   -1, -1, -1, -1, 1);
+
+        // Sub-step 2: if cur.value == target  (line 2)
+        std::string checkDesc = "Check: " + std::to_string(cur->value)
+                                + (matched ? " == " : " != ")
+                                + std::to_string(target);
+        recordStep(visualIndex, checkDesc,
+                   -1, -1, -1, -1, 2);
+
+        if (matched) return visualIndex;
+
+        // Sub-step 3: cur = cur.next  (line 4) — not matched, advance
+        recordStep(visualIndex, "Not matched, cur = cur.next",
+                   -1, -1, -1, -1, 4);
+
         cur = cur->next;
         visualIndex++;
     }
@@ -72,7 +97,9 @@ void LinkedListVisualizer::insertValue(int value, bool atHead) {
         while (cur && cur->next) { newIndex++; cur = cur->next; }
     }
 
-    recordStep(-1, "Inserted " + std::to_string(value) + (atHead ? " at head" : " at tail"), newIndex);
+    // For insert at head: line 2 = "head = node"; for tail: line 6 = "cur.next = node"
+    int finalPseudoLine = atHead ? 2 : 6;
+    recordStep(-1, "Inserted " + std::to_string(value) + (atHead ? " at head" : " at tail"), newIndex, -1, -1, -1, finalPseudoLine);
 
     currentStep = 0; elapsedTime = 0.0f; isAnimating = false;
     droppingNodeIndex = newIndex; dropAnimProgress = 0.0f; isDropAnimating = true;
@@ -85,10 +112,13 @@ void LinkedListVisualizer::deleteByIndex(int targetIndex) {
     int foundIndex = buildTraverseSteps(targetIndex, true);
 
     if (foundIndex != -1) {
+        // pseudocodeLine 3 = "mark for removal"
         recordStep(-1, "Found index " + std::to_string(targetIndex) + "! Blinking before removal...",
-                   -1, foundIndex);
+                   -1, foundIndex, -1, -1, 3);
         linkedList.remove(targetIndex);
-        recordStep(-1, "Successfully removed node at index " + std::to_string(targetIndex));
+        // pseudocodeLine 6 = "delete cur"
+        recordStep(-1, "Successfully removed node at index " + std::to_string(targetIndex),
+                   -1, -1, -1, -1, 6);
     } else {
         recordStep(-1, "Index " + std::to_string(targetIndex) + " out of bounds");
     }
@@ -105,10 +135,13 @@ void LinkedListVisualizer::searchValue(int value) {
     int foundIndex = buildTraverseSteps(value, false);
 
     if (foundIndex != -1) {
+        // pseudocodeLine 3 = "return cur"
         recordStep(-1, "Found " + std::to_string(value) + " at index " + std::to_string(foundIndex + 1) + "!",
-                   -1, -1, foundIndex);
+                   -1, -1, foundIndex, -1, 3);
     } else {
-        recordStep(-1, "Value " + std::to_string(value) + " not found in list");
+        // pseudocodeLine 5 = "return NOT_FOUND"
+        recordStep(-1, "Value " + std::to_string(value) + " not found in list",
+                   -1, -1, -1, -1, 5);
     }
 
     currentStep = 0; elapsedTime = 0.0f; isAnimating = true;
@@ -123,8 +156,9 @@ void LinkedListVisualizer::updateByIndex(int targetIndex, int newVal) {
 
     if (foundIndex != -1) {
         linkedList.update(targetIndex, newVal);
+        // pseudocodeLine 3 = "cur.value = newVal"
         recordStep(foundIndex, "Successfully updated node at index " + std::to_string(targetIndex) + " to " + std::to_string(newVal),
-                   -1, -1, -1, foundIndex);
+                   -1, -1, -1, foundIndex, 3);
     } else {
         recordStep(-1, "Index " + std::to_string(targetIndex) + " out of bounds");
     }
