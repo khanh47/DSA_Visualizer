@@ -100,5 +100,7 @@ private:
     // Helpers (refactored from render / updateVisualization)
     void applyNodeColor(UI::VisualNode& node, int index, const InsertStep& step, float& renderedRadius);
     void drawArrow(sf::RenderWindow& window, size_t fromIdx, size_t toIdx);
-    int buildTraverseSteps(int target, bool byIndex = false);  // shared traverse logic for search, update, delete
+    int buildSearchSteps(int target);
+    int buildDeleteSteps(int targetIndex);
+    int buildUpdateSteps(int targetIndex);
 };
