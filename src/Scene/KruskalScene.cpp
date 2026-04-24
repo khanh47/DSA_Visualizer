@@ -1,5 +1,6 @@
 #include "KruskalScene.h"
 #include "KruskalVisualizer.h"
+#include "PseudocodeData.h"
 #include "ResourceManager.h"
 #include <algorithm>
 #include <cctype>
@@ -21,6 +22,10 @@ void KruskalScene::onRandom() {
 }
 
 void KruskalScene::onRun() {
+    if (pseudocodePanel) {
+        pseudocodePanel->setPseudocode(Pseudocode::kKruskalTitle, Pseudocode::kKruskalMain);
+    }
+
     if (visualizer) {
         auto* kruskalVisualizer = dynamic_cast<KruskalVisualizer*>(visualizer.get());
         if (kruskalVisualizer) {

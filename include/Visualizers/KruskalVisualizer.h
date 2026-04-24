@@ -28,6 +28,7 @@ public:
     void goToPreviousStep() override;
     void goToNextStep() override;
     void goToFinalStep() override;
+    int getCurrentPseudocodeLine() const override;
 
     KruskalDataStructure& data();
     const KruskalDataStructure& data() const;
