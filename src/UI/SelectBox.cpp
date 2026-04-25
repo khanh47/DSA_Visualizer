@@ -4,6 +4,13 @@
 
 namespace UI {
 
+namespace {
+const sf::Color kNormalButtonColor(50, 66, 96);
+const sf::Color kNormalButtonHoverColor(90, 106, 136);
+const sf::Color kActiveSelectionColor(120, 150, 230);
+const sf::Color kSelectionOutlineColor(120, 150, 230, 120);
+} // namespace
+
 SelectBox::SelectBox(const sf::Vector2f& position,
                      const sf::Vector2f& size,
                      const std::vector<std::string>& options,
@@ -19,7 +26,9 @@ SelectBox::SelectBox(const sf::Vector2f& position,
     // Main rounded box
     mainBox = makeRoundedRect(size, kCornerRadius);
     mainBox.setPosition(position);
-    mainBox.setFillColor(sf::Color(58, 66, 88));
+    mainBox.setFillColor(kNormalButtonColor);
+    mainBox.setOutlineThickness(1.0f);
+    mainBox.setOutlineColor(kSelectionOutlineColor);
 
     mainText.setFillColor(sf::Color::White);
     mainText.setPosition({position.x + 12.0f, position.y + 8.0f});
@@ -40,9 +49,8 @@ SelectBox::SelectBox(const sf::Vector2f& position,
         sf::ConvexShape optionBox = makeRoundedRect(size,
             (i == options.size() - 1) ? kCornerRadius : 0.0f);
         optionBox.setPosition({position.x, optY});
-        optionBox.setFillColor(sf::Color(44, 52, 74));
-        optionBox.setOutlineThickness(1.0f);
-        optionBox.setOutlineColor(sf::Color(100, 110, 140));
+        optionBox.setFillColor(kNormalButtonColor);
+        optionBox.setOutlineThickness(0.0f);
         optionBoxes.push_back(optionBox);
 
         sf::Text optionText(ResourceManager::getInstance().getFont("Roboto"), options[i], charSize);
@@ -117,17 +125,13 @@ void SelectBox::render(sf::RenderWindow& window) {
         return;
     }
 
-    const sf::Color kDefaultBg(44, 52, 74);
-    const sf::Color kSelectedBg(120, 90, 235);
-    const sf::Color kHoverBg(70, 80, 110);
-
     for (std::size_t i = 0; i < optionBoxes.size(); ++i) {
         if (static_cast<int>(i) == static_cast<int>(selectedIndex)) {
-            optionBoxes[i].setFillColor(kSelectedBg);
+            optionBoxes[i].setFillColor(kActiveSelectionColor);
         } else if (static_cast<int>(i) == hoveredIndex) {
-            optionBoxes[i].setFillColor(kHoverBg);
+            optionBoxes[i].setFillColor(kNormalButtonHoverColor);
         } else {
-            optionBoxes[i].setFillColor(kDefaultBg);
+            optionBoxes[i].setFillColor(kNormalButtonColor);
         }
 
         window.draw(optionBoxes[i]);
