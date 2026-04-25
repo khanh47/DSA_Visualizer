@@ -35,9 +35,11 @@ public:
 
 private:
     void buildStaticLayout();
+    void rebuildSortedEdges();
     void syncAlgorithmState();
 
     KruskalDataStructure graph;
+    std::vector<KruskalDataStructure::Edge> sortedEdges;
     std::vector<KruskalDataStructure::Edge> mstEdges;
     std::vector<sf::Vector2f> layoutPositions;
     std::vector<int> currentParents;
@@ -45,7 +47,13 @@ private:
     std::size_t currentEdgeIndex = 0;
     std::size_t currentMstEdge = 0;
     float animationElapsed = 0.0f;
+    float manualPseudoElapsed = 0.0f;
     float playbackSpeed = 1.0f;
     bool autoRun = true;
     bool animationReady = false;
+    bool manualPseudoAnimating = false;
+    bool manualAdvancePending = false;
+    bool manualEdgeVisible = false;
+    int manualPseudoStartLine = -1;
+    int manualPseudoEndLine = -1;
 };

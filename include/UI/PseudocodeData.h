@@ -67,8 +67,7 @@ inline const std::vector<std::string> kKruskalMain = {
     "for each edge (u, v, w) in edges",   // 2
     "    if find(u) != find(v)",          // 3
     "        union(u, v); add edge",      // 4
-    "if mst.size == n - 1: stop",         // 5
-    "return mst",                         // 6
+    "if mst.size == n - 1: return mst",   // 5
 };
 
 } // namespace Pseudocode
