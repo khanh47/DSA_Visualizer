@@ -47,7 +47,19 @@ std::vector<KruskalDataStructure::Edge> KruskalDataStructure::runKruskal() const
     DSU dsu;
     dsu.init(numNodes);
     std::vector<KruskalDataStructure::Edge> res;
-    for (const Edge& edge : edges) {
+
+    std::vector<Edge> sortedEdges = edges;
+    std::sort(sortedEdges.begin(), sortedEdges.end(), [](const Edge& a, const Edge& b) {
+        if (a.w != b.w) {
+            return a.w < b.w;
+        }
+        if (a.u != b.u) {
+            return a.u < b.u;
+        }
+        return a.v < b.v;
+    });
+
+    for (const Edge& edge : sortedEdges) {
         if (dsu.join(edge.u, edge.v)) {
             res.push_back(edge);
         }

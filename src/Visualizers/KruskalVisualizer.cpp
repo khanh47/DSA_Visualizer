@@ -12,13 +12,12 @@
 
 namespace {
 
-std::string makeVertexLabel(int index) {
-    if (index >= 0 && index < 26) {
-        return std::string(1, static_cast<char>('A' + index));
-    }
+constexpr float kStepDurationSeconds = 1.6f;
+constexpr float kManualPseudoStepDurationSeconds = 0.9f;
 
-    if (index >= 26) {
-        return "V" + std::to_string(index);
+std::string makeVertexLabel(int index) {
+    if (index >= 0) {
+        return std::to_string(index);
     }
 
     return "?";
@@ -33,6 +32,10 @@ std::string makeEdgeLabel(const KruskalDataStructure::Edge& edge) {
 KruskalVisualizer::KruskalVisualizer() {
     font = &ResourceManager::getInstance().getFont("Roboto");
     random();
+}
+
+void KruskalVisualizer::rebuildSortedEdges() {
+    sortedEdges = graph.getEdges();
 }
 
 void KruskalVisualizer::buildStaticLayout() {
@@ -95,39 +98,76 @@ void KruskalVisualizer::buildStaticLayout() {
 
 void KruskalVisualizer::random() {
     graph.randomGraph();
+    rebuildSortedEdges();
     buildStaticLayout();
     mstEdges.clear();
     currentParents.clear();
     currentEdgeIndex = 0;
     currentMstEdge = 0;
     animationElapsed = 0.0f;
+    manualPseudoElapsed = 0.0f;
     animationReady = false;
+    manualPseudoAnimating = false;
+    manualAdvancePending = false;
+    manualEdgeVisible = false;
+    manualPseudoStartLine = -1;
+    manualPseudoEndLine = -1;
 }
 
 void KruskalVisualizer::run() {
-    if (!autoRun) return;
     if (layoutPositions.size() != static_cast<std::size_t>(graph.getNumNodes())) {
         buildStaticLayout();
     }
+    rebuildSortedEdges();
+    std::sort(sortedEdges.begin(), sortedEdges.end(), [](const auto& a, const auto& b) {
+        if (a.w != b.w) {
+            return a.w < b.w;
+        }
+        if (a.u != b.u) {
+            return a.u < b.u;
+        }
+        return a.v < b.v;
+    });
     mstEdges = graph.runKruskal();
     currentEdgeIndex = 0;
     animationElapsed = 0.0f;
+    manualPseudoElapsed = 0.0f;
     animationReady = true;
-    autoRun = true;
+    manualAdvancePending = false;
     syncAlgorithmState();
+
+    if (autoRun) {
+        manualPseudoAnimating = false;
+        manualEdgeVisible = true;
+        manualPseudoStartLine = -1;
+        manualPseudoEndLine = -1;
+    } else {
+        // Manual Run only plays intro pseudocode; no edge is being checked yet.
+        manualPseudoAnimating = true;
+        manualEdgeVisible = false;
+        manualPseudoStartLine = 0;
+        manualPseudoEndLine = 1;
+    }
 }
 
 void KruskalVisualizer::reset() {
     graph.clear();
+    sortedEdges.clear();
     layoutPositions.clear();
     mstEdges.clear();
     currentParents.clear();
     currentEdgeIndex = 0;
     currentMstEdge = 0;
     animationElapsed = 0.0f;
+    manualPseudoElapsed = 0.0f;
     autoRun = false;
     playbackSpeed = 1.0f;
     animationReady = false;
+    manualPseudoAnimating = false;
+    manualAdvancePending = false;
+    manualEdgeVisible = false;
+    manualPseudoStartLine = -1;
+    manualPseudoEndLine = -1;
 }
 
 std::string KruskalVisualizer::getProperties() const {
@@ -140,6 +180,16 @@ void KruskalVisualizer::setPlaybackSpeed(float speed) {
 
 void KruskalVisualizer::setAutoRun(bool value) {
     autoRun = value;
+    if (!autoRun) {
+        animationElapsed = 0.0f;
+        manualEdgeVisible = false;
+    } else {
+        manualPseudoAnimating = false;
+        manualAdvancePending = false;
+        manualEdgeVisible = animationReady;
+        manualPseudoStartLine = -1;
+        manualPseudoEndLine = -1;
+    }
 }
 
 void KruskalVisualizer::syncAlgorithmState() {
@@ -151,7 +201,7 @@ void KruskalVisualizer::syncAlgorithmState() {
         return;
     }
 
-    const auto& edges = graph.getEdges();
+    const auto& edges = sortedEdges;
     const std::size_t consideredCount = std::min(currentEdgeIndex, edges.size());
 
     KruskalDataStructure::DSU dsu;
@@ -178,15 +228,58 @@ void KruskalVisualizer::processEvents(const sf::Event& event) {
 }
 
 void KruskalVisualizer::update(float deltaTime) {
-    if (!animationReady || !autoRun || currentEdgeIndex >= graph.getEdges().size()) {
+    const auto& edges = sortedEdges;
+    if (!animationReady) {
         return;
     }
 
+    if (!autoRun) {
+        if (manualPseudoAnimating) {
+            manualPseudoElapsed += deltaTime * playbackSpeed;
+            if (manualPseudoElapsed >= kManualPseudoStepDurationSeconds) {
+                manualPseudoElapsed = kManualPseudoStepDurationSeconds;
+                manualPseudoAnimating = false;
+
+                if (manualAdvancePending) {
+                    if (currentEdgeIndex < edges.size()) {
+                        ++currentEdgeIndex;
+                    }
+                    syncAlgorithmState();
+
+                    const std::size_t targetMstEdges = static_cast<std::size_t>(std::max(0, graph.getNumNodes() - 1));
+                    if (currentMstEdge >= targetMstEdges) {
+                        currentEdgeIndex = edges.size();
+                    }
+
+                    // In manual mode, only show orange while actively checking.
+                    // After a step resolves, keep MST edges blue and hide the next edge
+                    // until the user presses ">" again.
+                    manualEdgeVisible = false;
+                    manualAdvancePending = false;
+                }
+            }
+        }
+        return;
+    }
+
+    if (currentEdgeIndex >= edges.size()) {
+        return;
+    }
+
+    const std::size_t targetMstEdges = static_cast<std::size_t>(std::max(0, graph.getNumNodes() - 1));
+
     animationElapsed += deltaTime * playbackSpeed;
-    while (animationElapsed >= 1.0f && currentEdgeIndex < graph.getEdges().size()) {
-        animationElapsed -= 1.0f;
+    while (animationElapsed >= kStepDurationSeconds && currentEdgeIndex < edges.size()) {
+        animationElapsed -= kStepDurationSeconds;
         ++currentEdgeIndex;
         syncAlgorithmState();
+
+        // Kruskal stops once MST has n-1 edges. End playback immediately.
+        if (currentMstEdge >= targetMstEdges) {
+            currentEdgeIndex = edges.size();
+            animationElapsed = 0.0f;
+            break;
+        }
     }
 }
 
@@ -204,7 +297,7 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
         buildStaticLayout();
     }
 
-    const auto& edges = graph.getEdges();
+    const auto& edges = sortedEdges;
     const sf::Vector2u windowSize = window.getSize();
     const float graphCenterYFactor = 0.54f;
     const float stateLeftX = 22.0f;
@@ -235,7 +328,7 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
 
     const std::size_t mstVisibleCount = std::min(currentMstEdge, mstEdges.size());
     const std::size_t displayedEdgeIndex = std::min(currentEdgeIndex, edges.size());
-    const bool hasCurrentEdge = animationReady && displayedEdgeIndex < edges.size();
+    const bool hasCurrentEdge = animationReady && displayedEdgeIndex < edges.size() && (autoRun || manualEdgeVisible);
     const KruskalDataStructure::Edge currentEdge = hasCurrentEdge ? edges[displayedEdgeIndex] : KruskalDataStructure::Edge{};
     std::vector<sf::FloatRect> placedWeightBoxes;
 
@@ -414,8 +507,6 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     }
 
     std::vector<int> componentLabels(static_cast<std::size_t>(nodeCount), 0);
-    std::unordered_map<int, int> rootToLabel;
-    int nextLabel = 1;
 
     auto findRoot = [&](int node) {
         int root = node;
@@ -426,12 +517,7 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     };
 
     for (int node = 0; node < nodeCount; ++node) {
-        const int root = findRoot(node);
-        auto [it, inserted] = rootToLabel.emplace(root, nextLabel);
-        if (inserted) {
-            ++nextLabel;
-        }
-        componentLabels[static_cast<std::size_t>(node)] = it->second;
+        componentLabels[static_cast<std::size_t>(node)] = findRoot(node);
     }
 
     const float leftContentX = stateLeftX;
@@ -566,10 +652,16 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     drawText("Weight", 16, {edgeSplitX + 10.0f, edgeTableY + 6.0f}, titleColor, true);
 
     const float edgeRowsArea = std::max(0.0f, edgePanelHeight - 62.0f - edgeHeaderHeight - 10.0f);
-    const std::size_t maxRows = static_cast<std::size_t>(std::max(1, static_cast<int>(edgeRowsArea / rowHeight)));
-    const std::size_t rowsToDraw = std::min(edges.size(), maxRows);
+    const std::size_t rowsToDraw = edges.size();
+    const float edgeRowHeight = rowsToDraw > 0
+        ? std::max(1.0f, edgeRowsArea / static_cast<float>(rowsToDraw))
+        : rowHeight;
+    const unsigned int edgeRowTextSize = static_cast<unsigned int>(
+        std::clamp(edgeRowHeight * 0.58f, 10.0f, 18.0f)
+    );
+    const float edgeRowTextOffset = std::max(1.0f, (edgeRowHeight - static_cast<float>(edgeRowTextSize)) * 0.48f);
 
-    sf::RectangleShape edgeVertical({1.0f, edgeHeaderHeight + static_cast<float>(rowsToDraw) * rowHeight});
+    sf::RectangleShape edgeVertical({1.0f, edgeHeaderHeight + static_cast<float>(rowsToDraw) * edgeRowHeight});
     edgeVertical.setPosition({edgeSplitX, edgeTableY});
     edgeVertical.setFillColor(gridColor);
     window.draw(edgeVertical);
@@ -577,9 +669,9 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
     for (std::size_t i = 0; i < rowsToDraw; ++i) {
         const auto& edge = edges[i];
         const bool isCurrentQueueEdge = hasCurrentEdge && i == displayedEdgeIndex;
-        const float rowY = edgeTableY + edgeHeaderHeight + static_cast<float>(i) * rowHeight;
+        const float rowY = edgeTableY + edgeHeaderHeight + static_cast<float>(i) * edgeRowHeight;
 
-        sf::RectangleShape rowBg({edgeTableW, rowHeight});
+        sf::RectangleShape rowBg({edgeTableW, edgeRowHeight});
         rowBg.setPosition({edgeTableX, rowY});
         rowBg.setFillColor(isCurrentQueueEdge ? currentRowBg : (i % 2 == 0 ? altRowBg : sf::Color::Transparent));
         window.draw(rowBg);
@@ -590,14 +682,20 @@ void KruskalVisualizer::render(sf::RenderWindow& window) {
         window.draw(rowLine);
 
         const sf::Color rowTextColor = isCurrentQueueEdge ? currentRowText : textColor;
-        drawText(makeEdgeLabel(edge), 18, {edgeTableX + 10.0f, rowY + 5.0f}, rowTextColor);
-        drawText(std::to_string(edge.w), 18, {edgeSplitX + 10.0f, rowY + 5.0f}, rowTextColor);
+        drawText(makeEdgeLabel(edge), edgeRowTextSize, {edgeTableX + 10.0f, rowY + edgeRowTextOffset}, rowTextColor);
+        drawText(std::to_string(edge.w), edgeRowTextSize, {edgeSplitX + 10.0f, rowY + edgeRowTextOffset}, rowTextColor);
     }
 }
 
 void KruskalVisualizer::goToFirstStep() {
     currentEdgeIndex = 0;
     animationElapsed = 0.0f;
+    manualPseudoElapsed = 0.0f;
+    manualPseudoAnimating = false;
+    manualAdvancePending = false;
+    manualPseudoStartLine = -1;
+    manualPseudoEndLine = -1;
+    manualEdgeVisible = false;
     syncAlgorithmState();
 }
 
@@ -606,11 +704,48 @@ void KruskalVisualizer::goToPreviousStep() {
         --currentEdgeIndex;
     }
     animationElapsed = 0.0f;
+    manualPseudoElapsed = 0.0f;
+    manualPseudoAnimating = false;
+    manualAdvancePending = false;
+    manualPseudoStartLine = -1;
+    manualPseudoEndLine = -1;
+    manualEdgeVisible = false;
     syncAlgorithmState();
 }
 
 void KruskalVisualizer::goToNextStep() {
-    if (currentEdgeIndex < graph.getEdges().size()) {
+    if (!animationReady) {
+        return;
+    }
+
+    if (!autoRun) {
+        if (manualPseudoAnimating || currentEdgeIndex >= sortedEdges.size()) {
+            return;
+        }
+
+        auto findRoot = [&](int node) {
+            int root = node;
+            while (root >= 0 && root < static_cast<int>(currentParents.size()) && currentParents[static_cast<std::size_t>(root)] >= 0) {
+                root = currentParents[static_cast<std::size_t>(root)];
+            }
+            return root;
+        };
+
+        const auto& edge = sortedEdges[currentEdgeIndex];
+        const bool canJoin = findRoot(edge.u) != findRoot(edge.v);
+        const std::size_t targetMstEdges = static_cast<std::size_t>(std::max(0, graph.getNumNodes() - 1));
+        const bool finishesMst = canJoin && (currentMstEdge + 1 >= targetMstEdges);
+
+        manualPseudoStartLine = 2;
+        manualPseudoEndLine = !canJoin ? 3 : (finishesMst ? 5 : 4);
+        manualPseudoElapsed = 0.0f;
+        manualPseudoAnimating = true;
+        manualAdvancePending = true;
+        manualEdgeVisible = true;
+        return;
+    }
+
+    if (currentEdgeIndex < sortedEdges.size()) {
         ++currentEdgeIndex;
     }
     animationElapsed = 0.0f;
@@ -618,13 +753,19 @@ void KruskalVisualizer::goToNextStep() {
 }
 
 void KruskalVisualizer::goToFinalStep() {
-    currentEdgeIndex = graph.getEdges().size();
+    currentEdgeIndex = sortedEdges.size();
     animationElapsed = 0.0f;
+    manualPseudoElapsed = 0.0f;
+    manualPseudoAnimating = false;
+    manualAdvancePending = false;
+    manualPseudoStartLine = -1;
+    manualPseudoEndLine = -1;
+    manualEdgeVisible = false;
     syncAlgorithmState();
 }
 
 int KruskalVisualizer::getCurrentPseudocodeLine() const {
-    const auto& edges = graph.getEdges();
+    const auto& edges = sortedEdges;
     const int nodeCount = graph.getNumNodes();
 
     if (!animationReady || edges.empty() || nodeCount <= 0) {
@@ -632,11 +773,49 @@ int KruskalVisualizer::getCurrentPseudocodeLine() const {
     }
 
     if (currentEdgeIndex >= edges.size()) {
-        return 6;
+        return 5;
     }
 
     if (currentParents.empty()) {
         return 2;
+    }
+
+    if (!autoRun) {
+        if (manualPseudoAnimating && manualPseudoStartLine >= 0 && manualPseudoEndLine >= manualPseudoStartLine) {
+            const float t = std::clamp(manualPseudoElapsed / kManualPseudoStepDurationSeconds, 0.0f, 0.999f);
+            const int span = manualPseudoEndLine - manualPseudoStartLine + 1;
+            return manualPseudoStartLine + static_cast<int>(t * static_cast<float>(span));
+        }
+
+        if (currentEdgeIndex >= edges.size()) {
+            return 5;
+        }
+
+        if (!manualEdgeVisible) {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    // Animate the highlight within each algorithm step so it advances downward
+    // through the pseudocode instead of jumping directly to a target line.
+    const float phase = autoRun
+        ? std::clamp(animationElapsed / kStepDurationSeconds, 0.0f, 0.999f)
+        : 1.0f;
+
+    // Intro for the very first step: show setup lines before entering loop body.
+    if (autoRun && currentEdgeIndex == 0) {
+        if (phase < 0.20f) return 0;
+        if (phase < 0.40f) return 1;
+    }
+
+    if (phase < 0.58f) {
+        return 2;
+    }
+
+    if (phase < 0.78f) {
+        return 3;
     }
 
     const auto& edge = edges[currentEdgeIndex];
@@ -650,10 +829,13 @@ int KruskalVisualizer::getCurrentPseudocodeLine() const {
 
     const bool canJoin = findRoot(edge.u) != findRoot(edge.v);
     if (!canJoin) {
-        return 2;
+        return 3;
     }
 
     if (currentMstEdge + 1 >= static_cast<std::size_t>(std::max(0, nodeCount - 1))) {
+        if (phase < 0.92f) {
+            return 4;
+        }
         return 5;
     }
 
