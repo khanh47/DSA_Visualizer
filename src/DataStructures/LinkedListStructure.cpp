@@ -33,6 +33,23 @@ void LinkedList::insertAtHead(int value) {
     head = newNode;
 }
 
+void LinkedList::insertAtIndex(int value, int index) {
+    if (index <= 1) {
+        insertAtHead(value);
+        return;
+    }
+
+    Node* cur = head;
+    int currentIndex = 1;
+    while (cur->next && currentIndex < index - 1) {
+        cur = cur->next;
+        currentIndex++;
+    }
+
+    Node* newNode = new Node{value, cur->next};
+    cur->next = newNode;
+}
+
 void LinkedList::remove(int index) {
     if (!head || index < 1) return;
 
