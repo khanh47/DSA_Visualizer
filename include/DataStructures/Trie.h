@@ -2,8 +2,6 @@
 #include <string>
 #include <iostream>
 
-using namespace std;
-///The class TrieNode for use
 class TrieNode {
 public:
     TrieNode* children[256];
@@ -17,7 +15,8 @@ class Trie {
 private:
     TrieNode* root;
     bool deleteHelper(TrieNode* current, const std::string& word, int index);
-///public node for .cpp files
+    void clearHelper(TrieNode* node);
+
 public:
     Trie();
     ~Trie();
@@ -27,7 +26,7 @@ public:
     bool search(const std::string& word) const;
     void remove(const std::string& word);
     void update(const std::string& oldWord, const std::string& newWord);
+    void clear(); 
 };
-
 
 
