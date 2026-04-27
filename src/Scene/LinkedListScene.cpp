@@ -2,7 +2,6 @@
 #include "LinkedListVisualizer.h"
 #include "PseudocodeData.h"
 #include "ResourceManager.h"
-#include <iostream>
 
 LinkedListScene::LinkedListScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {

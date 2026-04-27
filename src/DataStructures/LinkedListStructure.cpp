@@ -77,17 +77,6 @@ void LinkedList::remove(int index) {
     }
 }
 
-bool LinkedList::search(int value) {
-    Node* cur = head;
-    while (cur) {
-        if (cur->value == value) {
-            return true;
-        }
-        cur = cur->next;
-    }
-    return false;
-}
-
 void LinkedList::update(int index, int newVal) {
     if (index < 1) return;
     Node* cur = head;
