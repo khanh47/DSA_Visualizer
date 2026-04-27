@@ -56,10 +56,10 @@ void VisualEdge::render(sf::RenderWindow& window) const {
     const sf::Vector2f offset(n.x * edgeThickness * 0.5f, n.y * edgeThickness * 0.5f);
 
     sf::Vertex thickEdge[] = {
-        sf::Vertex(sf::Vector2f(startPoint.x + offset.x, startPoint.y + offset.y), edgeColor),
-        sf::Vertex(sf::Vector2f(startPoint.x - offset.x, startPoint.y - offset.y), edgeColor),
-        sf::Vertex(sf::Vector2f(endPoint.x + offset.x, endPoint.y + offset.y), edgeColor),
-        sf::Vertex(sf::Vector2f(endPoint.x - offset.x, endPoint.y - offset.y), edgeColor)
+        sf::Vertex{sf::Vector2f(startPoint.x + offset.x, startPoint.y + offset.y), edgeColor},
+        sf::Vertex{sf::Vector2f(startPoint.x - offset.x, startPoint.y - offset.y), edgeColor},
+        sf::Vertex{sf::Vector2f(endPoint.x + offset.x, endPoint.y + offset.y), edgeColor},
+        sf::Vertex{sf::Vector2f(endPoint.x - offset.x, endPoint.y - offset.y), edgeColor}
     };
     window.draw(thickEdge, 4, sf::PrimitiveType::TriangleStrip);
 }
