@@ -13,7 +13,6 @@ void TrieVisualizer::insertWord(const std::string& word) {
     currentStep = 0;
     
     recordStep(word, 0, "Starting insertion of: " + word, "INSERT");
-    
     for (size_t i = 1; i <= word.length(); ++i) {
         recordStep(word, i, "Inserting character: " + std::string(1, word[i-1]), "INSERT");
     }
@@ -23,6 +22,7 @@ void TrieVisualizer::insertWord(const std::string& word) {
     recordStep(word, word.length(), "Finished inserting: " + word, "INSERT");
     
     currentStep = steps.size() - 1;
+    updateVisualization();
 }
 
 void TrieVisualizer::searchWord(const std::string& word) {
@@ -30,7 +30,6 @@ void TrieVisualizer::searchWord(const std::string& word) {
     currentStep = 0;
     
     recordStep(word, 0, "Searching for: " + word, "SEARCH");
-    
     TrieNode* current = trie.getRoot();
     bool found = true;
     for (size_t i = 0; i < word.length(); ++i) {
@@ -52,6 +51,7 @@ void TrieVisualizer::searchWord(const std::string& word) {
     }
     
     currentStep = steps.size() - 1;
+    updateVisualization();
 }
 
 void TrieVisualizer::removeWord(const std::string& word) {
@@ -59,7 +59,6 @@ void TrieVisualizer::removeWord(const std::string& word) {
     currentStep = 0;
     
     recordStep(word, 0, "Removing word: " + word, "REMOVE");
-    
     trie.remove(word);
     
     auto it = std::find(currentWords.begin(), currentWords.end(), word);
@@ -69,6 +68,7 @@ void TrieVisualizer::removeWord(const std::string& word) {
     
     recordStep(word, 0, "Finished removing: " + word, "REMOVE");
     currentStep = steps.size() - 1;
+    updateVisualization();
 }
 
 void TrieVisualizer::updateVisualization(float windowWidth, float windowHeight) {
@@ -78,7 +78,6 @@ void TrieVisualizer::updateVisualization(float windowWidth, float windowHeight) 
     if (steps.empty() || !font) return;
 
     const TrieStep& state = steps[currentStep];
-    
     Trie tempTrie;
     for (const std::string& w : state.words) {
         tempTrie.insert(w);
@@ -95,7 +94,6 @@ void TrieVisualizer::updateVisualization(float windowWidth, float windowHeight) 
 
     float startX = windowWidth / 2.0f;
     float startY = 100.0f;
-
     buildTreeLayout(rootNode, startX, startY, "", state, widths, windowWidth, windowHeight);
 }
 
@@ -194,7 +192,7 @@ void TrieVisualizer::recordStep(const std::string& activeWord, int charIndex, co
 }
 
 void TrieVisualizer::reset() {
-    trie = Trie();
+    trie.clear(); // Prevents memory leaks
     currentWords.clear();
     steps.clear();
     currentStep = 0;
@@ -206,7 +204,7 @@ void TrieVisualizer::reset() {
 std::string TrieVisualizer::getProperties() const {
     std::ostringstream oss;
     oss << "Trie Visualizer\n";
-    oss << "Current Step: " << (currentStep + 1) << "/" << steps.size() << "\n";
+    oss << "Current Step: " << (currentStep + 1) << "/" << std::max<size_t>(1, steps.size()) << "\n";
     if (currentStep < static_cast<int>(steps.size())) {
         oss << "Status: " << steps[currentStep].description;
     }
