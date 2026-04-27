@@ -274,8 +274,8 @@ void TrieVisualizer::render(sf::RenderWindow& window) {
 
     for (const auto& edge : edges) {
         sf::Vertex line[] = {
-            sf::Vertex(edge.first, sf::Color(150, 150, 150)),
-            sf::Vertex(edge.second, sf::Color(150, 150, 150))
+            sf::Vertex{edge.first, sf::Color(150, 150, 150)},
+            sf::Vertex{edge.second, sf::Color(150, 150, 150)}
         };
         window.draw(line, 2, sf::PrimitiveType::Lines);
     }
