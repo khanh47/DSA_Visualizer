@@ -1,31 +1,41 @@
 #include "TrieScene.h"
+#include "TrieVisualizer.h"
 #include "ResourceManager.h"
 #include <iostream>
 
 TrieScene::TrieScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
     initializeOperationMenu();
-    // TODO: Initialize Trie-specific visualization.
-    // TODO: Create TrieVisualizer and set it via setVisualizer().
+    visualizer = std::make_unique<TrieVisualizer>();
 }
 
 void TrieScene::onInsert(const std::string& value) {
-    // TODO: Insert value into Trie structure.
+    if (visualizer) {
+        static_cast<TrieVisualizer*>(visualizer.get())->insertWord(value);
+    }
     displayStatus("Inserted: " + value);
 }
 
 void TrieScene::onSearch(const std::string& value) {
-    // TODO: Search for value in Trie structure.
+    if (visualizer) {
+        static_cast<TrieVisualizer*>(visualizer.get())->searchWord(value);
+    }
     displayStatus("Searching: " + value);
 }
 
 void TrieScene::onDelete(const std::string& value) {
-    // TODO: Delete value from Trie structure.
+    if (visualizer) {
+        static_cast<TrieVisualizer*>(visualizer.get())->removeWord(value);
+    }
     displayStatus("Deleted: " + value);
 }
 
 void TrieScene::onUpdate(const std::string& key, const std::string& value) {
-    // TODO: Update Trie node/value mapping.
+    if (visualizer) {
+        auto* tv = static_cast<TrieVisualizer*>(visualizer.get());
+        tv->removeWord(key);
+        tv->insertWord(value);
+    }
     displayStatus("Updating " + key + " with: " + value);
 }
 
