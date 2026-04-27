@@ -163,9 +163,29 @@ void LinkedListVisualizer::insertValue(int value, bool atHead) {
         while (cur && cur->next) { newIndex++; cur = cur->next; }
     }
 
-    // For insert at head: line 2 = "head = node"; for tail: line 6 = "cur.next = node"
-    int finalPseudoLine = atHead ? 2 : 6;
-    recordStep(-1, "Inserted " + std::to_string(value) + (atHead ? " at head" : " at tail"), newIndex, -1, -1, -1, finalPseudoLine);
+    recordStep(-1, "Inserted " + std::to_string(value) + (atHead ? " at head" : " at tail"), newIndex);
+
+    currentStep = 0; elapsedTime = 0.0f; isAnimating = false;
+    droppingNodeIndex = newIndex; dropAnimProgress = 0.0f; isDropAnimating = true;
+    updateVisualization();
+}
+
+void LinkedListVisualizer::insertAtIndex(int value, int index) {
+    steps.clear(); currentStep = 0; nodePositions.clear();
+
+    // Clamp index: 1-based, max = size + 1
+    int size = 0;
+    Node* cur = linkedList.getHead();
+    while (cur) { size++; cur = cur->next; }
+    if (index < 1) index = 1;
+    if (index > size + 1) index = size + 1;
+
+    linkedList.insertAtIndex(value, index);
+
+    // The new node's visual index is (index - 1)
+    int newIndex = index - 1;
+
+    recordStep(-1, "Inserted " + std::to_string(value) + " at index " + std::to_string(index), newIndex);
 
     currentStep = 0; elapsedTime = 0.0f; isAnimating = false;
     droppingNodeIndex = newIndex; dropAnimProgress = 0.0f; isDropAnimating = true;
