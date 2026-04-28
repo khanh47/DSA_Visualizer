@@ -1,42 +1,65 @@
 #include "TrieScene.h"
 #include "TrieVisualizer.h"
 #include "ResourceManager.h"
-#include <iostream>
 
 TrieScene::TrieScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
     initializeOperationMenu();
-    visualizer = std::make_unique<TrieVisualizer>();
+
+    // Create and register the TrieVisualizer
+    auto* trieViz = new TrieVisualizer();
+    setVisualizer(trieViz);
+
+    displayStatus("Trie ready. Use Insert / Search / Delete.");
 }
 
 void TrieScene::onInsert(const std::string& value) {
-    if (visualizer) {
-        static_cast<TrieVisualizer*>(visualizer.get())->insertWord(value);
+    if (value.empty()) {
+        displayStatus("Please enter a word to insert.");
+        return;
     }
-    displayStatus("Inserted: " + value);
+    auto* trieViz = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (trieViz) {
+        trieViz->insertWord(value);
+        displayStatus("Inserting: \"" + value + "\"");
+    }
 }
 
 void TrieScene::onSearch(const std::string& value) {
-    if (visualizer) {
-        static_cast<TrieVisualizer*>(visualizer.get())->searchWord(value);
+    if (value.empty()) {
+        displayStatus("Please enter a word to search.");
+        return;
     }
-    displayStatus("Searching: " + value);
+    auto* trieViz = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (trieViz) {
+        trieViz->searchWord(value);
+        displayStatus("Searching: \"" + value + "\"");
+    }
 }
 
 void TrieScene::onDelete(const std::string& value) {
-    if (visualizer) {
-        static_cast<TrieVisualizer*>(visualizer.get())->removeWord(value);
+    if (value.empty()) {
+        displayStatus("Please enter a word to delete.");
+        return;
     }
-    displayStatus("Deleted: " + value);
+    auto* trieViz = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (trieViz) {
+        trieViz->removeWord(value);
+        displayStatus("Deleting: \"" + value + "\"");
+    }
 }
 
 void TrieScene::onUpdate(const std::string& key, const std::string& value) {
-    if (visualizer) {
-        auto* tv = static_cast<TrieVisualizer*>(visualizer.get());
-        tv->removeWord(key);
-        tv->insertWord(value);
+    if (key.empty() || value.empty()) {
+        displayStatus("Please enter both old and new words.");
+        return;
     }
-    displayStatus("Updating " + key + " with: " + value);
+    auto* trieViz = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (trieViz) {
+        trieViz->removeWord(key);
+        trieViz->insertWord(value);
+        displayStatus("Updated \"" + key + "\" -> \"" + value + "\"");
+    }
 }
 
 void TrieScene::onReset() {
@@ -47,44 +70,28 @@ void TrieScene::onReset() {
 }
 
 void TrieScene::onPlaybackSpeedChanged(float speed) {
-    if (visualizer) {
-        visualizer->setPlaybackSpeed(speed);
-    }
+    if (visualizer) visualizer->setPlaybackSpeed(speed);
 }
 
 void TrieScene::onTogglePlaybackMode(bool autoRun) {
-    if (visualizer) {
-        visualizer->setAutoRun(autoRun);
-    }
-    displayStatus(autoRun ? "Playback mode: auto" : "Playback mode: manual");
+    if (visualizer) visualizer->setAutoRun(autoRun);
+    displayStatus(autoRun ? "Playback: auto" : "Playback: manual");
 }
 
 void TrieScene::onGoToFirstStep() {
-    if (visualizer) {
-        visualizer->goToFirstStep();
-    }
-    displayStatus("Go to first step.");
+    if (visualizer) visualizer->goToFirstStep();
 }
 
 void TrieScene::onGoToPreviousStep() {
-    if (visualizer) {
-        visualizer->goToPreviousStep();
-    }
-    displayStatus("Go to previous step.");
+    if (visualizer) visualizer->goToPreviousStep();
 }
 
 void TrieScene::onGoToNextStep() {
-    if (visualizer) {
-        visualizer->goToNextStep();
-    }
-    displayStatus("Go to next step.");
+    if (visualizer) visualizer->goToNextStep();
 }
 
 void TrieScene::onGoToFinalStep() {
-    if (visualizer) {
-        visualizer->goToFinalStep();
-    }
-    displayStatus("Go to final step.");
+    if (visualizer) visualizer->goToFinalStep();
 }
 
 std::string TrieScene::getSceneTitle() const {
