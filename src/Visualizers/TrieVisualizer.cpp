@@ -4,113 +4,39 @@
 #include <cmath>
 #include <algorithm>
 
-// ── Construction ────────────────────────────────────────────────────────────
+// ── Colour palette ────────────────────────────────────────────────────────────
+static const sf::Color kColNormal    (220, 228, 255);
+static const sf::Color kColEndOfWord (100, 220, 110);
+static const sf::Color kColInsert    (255, 185,  55);
+static const sf::Color kColInsertDone( 70, 210,  90);
+static const sf::Color kColSearch    (100, 185, 255);
+static const sf::Color kColFound     (255, 220,  50);
+static const sf::Color kColFail      (255,  80,  80);
+static const sf::Color kColRemove    (255, 130,  80);
 
+static const sf::Color kOutNormal    ( 80, 100, 170);
+static const sf::Color kOutEndOfWord ( 30, 140,  40);
+static const sf::Color kOutActive    (200, 120,   0);
+static const sf::Color kOutSearch    ( 30, 100, 200);
+static const sf::Color kOutFound     (180, 150,   0);
+static const sf::Color kOutFail      (160,   0,   0);
+static const sf::Color kOutRemove    (180,  60,  20);
+
+static const sf::Color kEdgeNormal   (130, 150, 210);
+static const sf::Color kEdgeActive   (255, 185,  55);
+
+// ── Lerp helpers ──────────────────────────────────────────────────────────────
+static sf::Vector2f lerpVec(sf::Vector2f a, sf::Vector2f b, float t) {
+    return { a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t };
+}
+static float clamp01(float v) { return v < 0.f ? 0.f : (v > 1.f ? 1.f : v); }
+
+// ── Constructor ───────────────────────────────────────────────────────────────
 TrieVisualizer::TrieVisualizer() {
     font = &ResourceManager::getInstance().getFont("Roboto");
 }
 
-// ── Operation entry points ───────────────────────────────────────────────────
-
-void TrieVisualizer::insertWord(const std::string& word) {
-    steps.clear();
-    currentStep = 0;
-
-    recordStep("", -1, "Starting insertion of: \"" + word + "\"", "INSERT");
-
-    for (size_t i = 1; i <= word.length(); ++i) {
-        recordStep(word, static_cast<int>(i),
-                   "Inserting character: '" + std::string(1, word[i - 1]) + "'  (prefix: \"" + word.substr(0, i) + "\")",
-                   "INSERT");
-    }
-
-    trie.insert(word);
-    currentWords.push_back(word);
-
-    recordStep(word, static_cast<int>(word.length()),
-               "Done! \"" + word + "\" inserted. End-of-word marker set.",
-               "INSERT_DONE");
-
-    currentStep = static_cast<int>(steps.size()) - 1;
-}
-
-void TrieVisualizer::searchWord(const std::string& word) {
-    steps.clear();
-    currentStep = 0;
-
-    recordStep("", -1, "Searching for: \"" + word + "\"", "SEARCH");
-
-    TrieNode* current = trie.getRoot();
-    bool found = true;
-    for (size_t i = 0; i < word.length(); ++i) {
-        unsigned char ch = static_cast<unsigned char>(word[i]);
-        if (current && current->children[ch]) {
-            current = current->children[ch];
-            recordStep(word, static_cast<int>(i + 1),
-                       "Found '" + std::string(1, word[i]) + "'  (matched prefix: \"" + word.substr(0, i + 1) + "\")",
-                       "SEARCH");
-        } else {
-            recordStep(word, static_cast<int>(i),
-                       "Character '" + std::string(1, word[i]) + "' not found — word does not exist.",
-                       "SEARCH_FAIL");
-            found = false;
-            break;
-        }
-    }
-
-    if (found) {
-        if (current && current->isEndOfWord) {
-            recordStep(word, static_cast<int>(word.length()),
-                       "\"" + word + "\" FOUND! End-of-word marker is set.",
-                       "SEARCH_FOUND");
-        } else {
-            recordStep(word, static_cast<int>(word.length()),
-                       "\"" + word + "\" not found — it is a prefix only, not a complete word.",
-                       "SEARCH_FAIL");
-        }
-    }
-
-    currentStep = static_cast<int>(steps.size()) - 1;
-}
-
-void TrieVisualizer::removeWord(const std::string& word) {
-    steps.clear();
-    currentStep = 0;
-
-    recordStep("", -1, "Removing: \"" + word + "\"", "REMOVE");
-
-    // Walk the path highlighting each node before removal
-    TrieNode* current = trie.getRoot();
-    bool canRemove = true;
-    for (size_t i = 0; i < word.length(); ++i) {
-        unsigned char ch = static_cast<unsigned char>(word[i]);
-        if (current && current->children[ch]) {
-            current = current->children[ch];
-            recordStep(word, static_cast<int>(i + 1),
-                       "Traversing '" + std::string(1, word[i]) + "' to locate word...",
-                       "REMOVE");
-        } else {
-            recordStep(word, static_cast<int>(i),
-                       "\"" + word + "\" not found in trie — nothing to remove.",
-                       "REMOVE_FAIL");
-            canRemove = false;
-            break;
-        }
-    }
-
-    if (canRemove) {
-        trie.remove(word);
-        auto it = std::find(currentWords.begin(), currentWords.end(), word);
-        if (it != currentWords.end()) currentWords.erase(it);
-
-        recordStep("", -1, "Done! \"" + word + "\" removed.", "REMOVE_DONE");
-    }
-
-    currentStep = static_cast<int>(steps.size()) - 1;
-}
-
-// ── Internal step recording ──────────────────────────────────────────────────
-
+// ── Step recording ────────────────────────────────────────────────────────────
 void TrieVisualizer::recordStep(const std::string& activeWord, int charIndex,
                                  const std::string& desc, const std::string& op) {
     TrieStep step;
@@ -122,199 +48,334 @@ void TrieVisualizer::recordStep(const std::string& activeWord, int charIndex,
     steps.push_back(step);
 }
 
-// ── Layout computation ────────────────────────────────────────────────────────
+// ── Operations ────────────────────────────────────────────────────────────────
+void TrieVisualizer::insertWord(const std::string& word) {
+    steps.clear();
+    currentStep = 0;
+    isAnimating = true;
+    elapsedTime = 0.f;
 
-float TrieVisualizer::calculateSubtreeWidths(TrieNode* node, std::map<TrieNode*, float>& widths) {
-    if (!node) return 0.0f;
-    float w = 0.0f;
-    int childCount = 0;
+    recordStep("", -1, "Insert \"" + word + "\": start at root", "INSERT");
+    for (size_t i = 1; i <= word.length(); ++i)
+        recordStep(word, static_cast<int>(i),
+                   "Insert \"" + word + "\": follow '" + word[i-1]
+                   + "' (prefix \"" + word.substr(0,i) + "\")", "INSERT");
 
-    for (int i = 0; i < 256; ++i) {
-        if (node->children[i]) {
-            w += calculateSubtreeWidths(node->children[i], widths);
-            ++childCount;
+    trie.insert(word);
+    currentWords.push_back(word);
+    recordStep(word, static_cast<int>(word.length()),
+               "Done — \"" + word + "\" inserted. End-of-word node is green.", "INSERT_DONE");
+    currentStep = 0;
+}
+
+void TrieVisualizer::searchWord(const std::string& word) {
+    steps.clear();
+    currentStep = 0;
+    isAnimating = true;
+    elapsedTime = 0.f;
+
+    recordStep("", -1, "Search \"" + word + "\": start at root", "SEARCH");
+    TrieNode* cur = trie.getRoot();
+    bool found = true;
+    for (size_t i = 0; i < word.length(); ++i) {
+        unsigned char ch = static_cast<unsigned char>(word[i]);
+        if (cur && cur->children[ch]) {
+            cur = cur->children[ch];
+            recordStep(word, static_cast<int>(i+1),
+                       "Search \"" + word + "\": found '" + word[i]
+                       + "' (prefix \"" + word.substr(0,i+1) + "\")", "SEARCH");
+        } else {
+            recordStep(word, static_cast<int>(i),
+                       "Search \"" + word + "\": '" + word[i] + "' missing — NOT FOUND",
+                       "SEARCH_FAIL");
+            found = false; break;
         }
     }
-
-    // Minimum leaf width; add small gaps between siblings
-    if (childCount == 0) {
-        w = 56.0f;
-    } else {
-        w += 12.0f * (childCount - 1); // gap between children
+    if (found) {
+        if (cur && cur->isEndOfWord)
+            recordStep(word, static_cast<int>(word.length()),
+                       "\"" + word + "\" FOUND! End-of-word marker present.", "SEARCH_FOUND");
+        else
+            recordStep(word, static_cast<int>(word.length()),
+                       "\"" + word + "\" NOT FOUND — prefix only, not a complete word.",
+                       "SEARCH_FAIL");
     }
+    currentStep = 0;
+}
 
+void TrieVisualizer::removeWord(const std::string& word) {
+    steps.clear();
+    currentStep = 0;
+    isAnimating = true;
+    elapsedTime = 0.f;
+
+    recordStep("", -1, "Remove \"" + word + "\": start at root", "REMOVE");
+    TrieNode* cur = trie.getRoot();
+    bool ok = true;
+    for (size_t i = 0; i < word.length(); ++i) {
+        unsigned char ch = static_cast<unsigned char>(word[i]);
+        if (cur && cur->children[ch]) {
+            cur = cur->children[ch];
+            recordStep(word, static_cast<int>(i+1),
+                       "Remove \"" + word + "\": traversing '" + word[i]
+                       + "' (prefix \"" + word.substr(0,i+1) + "\")", "REMOVE");
+        } else {
+            recordStep(word, static_cast<int>(i),
+                       "\"" + word + "\" not in trie — nothing to remove.", "REMOVE_FAIL");
+            ok = false; break;
+        }
+    }
+    if (ok) {
+        trie.remove(word);
+        auto it = std::find(currentWords.begin(), currentWords.end(), word);
+        if (it != currentWords.end()) currentWords.erase(it);
+        recordStep("", -1, "Done — \"" + word + "\" removed.", "REMOVE_DONE");
+    }
+    currentStep = 0;
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+float TrieVisualizer::calculateSubtreeWidths(TrieNode* node,
+                                              std::map<TrieNode*, float>& widths) {
+    if (!node) return 0.f;
+    float w = 0.f; int c = 0;
+    for (int i = 0; i < 256; ++i)
+        if (node->children[i]) { w += calculateSubtreeWidths(node->children[i], widths); ++c; }
+    if (c == 0) w = 52.f; else w += 10.f * (c - 1);
     widths[node] = w;
     return w;
 }
 
-void TrieVisualizer::buildTreeLayout(TrieNode* node, float x, float y,
-                                      const std::string& currentPath,
-                                      const TrieStep& stepState,
-                                      std::map<TrieNode*, float>& widths,
-                                      float windowWidth, float windowHeight) {
+void TrieVisualizer::buildTreeLayout(
+        TrieNode* node, float x, float y,
+        const std::string& currentPath, const TrieStep& stepState,
+        std::map<TrieNode*, float>& widths,
+        float windowWidth, float windowHeight,
+        std::map<std::string, TrieNodeRenderInfo>& outNodes,
+        std::vector<std::pair<std::string,std::string>>& outEdges)
+{
     if (!node) return;
 
-    // ── Zoom / pan transform ─────────────────────────────────────────────
-    float centerX = windowWidth / 2.0f;
-    float centerY = windowHeight / 2.0f;
-    float zoomedX = centerX + (x - centerX) * zoomLevel;
-    float zoomedY = centerY + (y - centerY) * zoomLevel;
-    sf::Vector2f finalPos(zoomedX + panOffset.x, zoomedY + panOffset.y);
+    float cx = windowWidth / 2.f, cy = windowHeight / 2.f;
+    sf::Vector2f pos(cx + (x - cx) * zoomLevel + panOffset.x,
+                     cy + (y - cy) * zoomLevel + panOffset.y);
 
-    // ── Node label ───────────────────────────────────────────────────────
-    std::string nodeLabel = currentPath.empty() ? "*" : std::string(1, currentPath.back());
-    float nodeRadius = 20.0f * zoomLevel;
-    auto vNode = std::make_unique<UI::VisualNode>(*font, nodeLabel, nodeRadius);
-    vNode->setPosition(finalPos);
-
-    // ── Determine highlight state ────────────────────────────────────────
     bool isActive = false;
     if (stepState.activeCharIndex >= 0 && !stepState.activeWord.empty()) {
-        std::string activePrefix = stepState.activeWord.substr(0, stepState.activeCharIndex);
-        isActive = (currentPath == activePrefix);
+        isActive = (currentPath == stepState.activeWord.substr(0, stepState.activeCharIndex));
     } else if (stepState.activeCharIndex == -1 && currentPath.empty()) {
-        isActive = true; // highlight root at step 0
+        isActive = true;
     }
 
-    // Default colour
-    if (node->isEndOfWord) {
-        vNode->setFillColor(sf::Color(100, 220, 100));   // green = end of word
-        vNode->setOutlineColor(sf::Color(30, 140, 30));
-    } else {
-        vNode->setFillColor(sf::Color(230, 235, 255));   // light blue-white
-        vNode->setOutlineColor(sf::Color(80, 100, 160));
-    }
-
-    // Override with operation-specific highlight
+    sf::Color fill, outline;
+    const std::string& op = stepState.operation;
     if (isActive) {
-        const std::string& op = stepState.operation;
-        if (op == "INSERT") {
-            vNode->setFillColor(sf::Color(255, 180, 50));   // amber
-            vNode->setOutlineColor(sf::Color(200, 120, 0));
-        } else if (op == "INSERT_DONE") {
-            vNode->setFillColor(sf::Color(80, 200, 80));    // bright green
-            vNode->setOutlineColor(sf::Color(30, 140, 30));
-        } else if (op == "SEARCH") {
-            vNode->setFillColor(sf::Color(100, 180, 255));  // sky blue
-            vNode->setOutlineColor(sf::Color(30, 100, 200));
-        } else if (op == "SEARCH_FOUND") {
-            vNode->setFillColor(sf::Color(255, 220, 50));   // gold
-            vNode->setOutlineColor(sf::Color(200, 160, 0));
-        } else if (op == "SEARCH_FAIL") {
-            vNode->setFillColor(sf::Color(255, 80, 80));    // red
-            vNode->setOutlineColor(sf::Color(180, 0, 0));
-        } else if (op == "REMOVE" || op == "REMOVE_DONE") {
-            vNode->setFillColor(sf::Color(255, 100, 100));  // red-orange
-            vNode->setOutlineColor(sf::Color(180, 30, 30));
+        if      (op == "INSERT")       { fill = kColInsert;     outline = kOutActive;   }
+        else if (op == "INSERT_DONE")  { fill = kColInsertDone; outline = kOutEndOfWord;}
+        else if (op == "SEARCH")       { fill = kColSearch;     outline = kOutSearch;   }
+        else if (op == "SEARCH_FOUND") { fill = kColFound;      outline = kOutFound;    }
+        else if (op == "SEARCH_FAIL")  { fill = kColFail;       outline = kOutFail;     }
+        else                           { fill = kColRemove;     outline = kOutRemove;   }
+    } else if (node->isEndOfWord) {
+        fill = kColEndOfWord; outline = kOutEndOfWord;
+    } else {
+        fill = kColNormal;    outline = kOutNormal;
+    }
+
+    TrieNodeRenderInfo info;
+    info.targetPos    = pos;
+    info.fillColor    = fill;
+    info.outlineColor = outline;
+    info.label        = currentPath.empty() ? "*" : std::string(1, currentPath.back());
+    info.path         = currentPath;
+    info.isEndOfWord  = node->isEndOfWord;
+    info.isActive     = isActive;
+    outNodes[currentPath] = info;
+
+    float startX = x - widths[node] / 2.f;
+    for (int i = 0; i < 256; ++i) {
+        if (!node->children[i]) continue;
+        float cw = widths[node->children[i]];
+        float cx2 = startX + cw / 2.f;
+        std::string childPath = currentPath + static_cast<char>(i);
+        outEdges.push_back({ currentPath, childPath });
+        buildTreeLayout(node->children[i], cx2, y + kLevelSpacing, childPath,
+                        stepState, widths, windowWidth, windowHeight, outNodes, outEdges);
+        startX += cw + 10.f;
+    }
+}
+
+void TrieVisualizer::computeLayout(
+        const TrieStep& state, float ww, float wh,
+        std::map<std::string, TrieNodeRenderInfo>& outNodes,
+        std::vector<std::pair<std::string,std::string>>& outEdges)
+{
+    outNodes.clear(); outEdges.clear();
+    Trie tmp;
+    for (const auto& w : state.words) tmp.insert(w);
+    if (state.operation == "INSERT" && state.activeCharIndex > 0)
+        tmp.insert(state.activeWord.substr(0, state.activeCharIndex));
+
+    TrieNode* root = tmp.getRoot();
+    if (!root) return;
+    std::map<TrieNode*, float> widths;
+    calculateSubtreeWidths(root, widths);
+    buildTreeLayout(root, ww / 2.f, 200.f, "", state, widths, ww, wh, outNodes, outEdges);
+}
+
+// ── Node pool sync ────────────────────────────────────────────────────────────
+void TrieVisualizer::syncNodePool(
+        const std::map<std::string, TrieNodeRenderInfo>& layout,
+        float baseRadius)
+{
+    for (auto& [path, n] : nodePool) n.targetAlpha = 0.f;
+
+    for (const auto& [path, info] : layout) {
+        if (nodePool.count(path) == 0) {
+            AnimatedNode n;
+            n.currentPos   = info.targetPos;
+            n.targetPos    = info.targetPos;
+            n.currentRadius= baseRadius;
+            n.targetRadius = baseRadius;
+            n.alpha        = 0.f;
+            n.targetAlpha  = 255.f;
+            n.fillColor    = info.fillColor;
+            n.outlineColor = info.outlineColor;
+            n.label        = info.label;
+            n.path         = path;
+            n.isActive     = info.isActive;
+            nodePool[path] = n;
+        } else {
+            AnimatedNode& n = nodePool[path];
+            n.targetPos     = info.targetPos;
+            n.targetAlpha   = 255.f;
+            n.fillColor     = info.fillColor;
+            n.outlineColor  = info.outlineColor;
+            n.label         = info.label;
+            n.isActive      = info.isActive;
+            n.targetRadius  = info.isActive ? baseRadius * 1.28f : baseRadius;
         }
     }
 
-    visualNodes.push_back(std::move(vNode));
-
-    // ── Recurse into children ────────────────────────────────────────────
-    float childLevelY = y + 75.0f;
-    float startX      = x - widths[node] / 2.0f;
-
-    for (int i = 0; i < 256; ++i) {
-        if (!node->children[i]) continue;
-
-        float childW = widths[node->children[i]];
-        float childX = startX + childW / 2.0f;
-
-        float childZoomedX = centerX + (childX - centerX) * zoomLevel;
-        float childZoomedY = centerY + (childLevelY - centerY) * zoomLevel;
-        sf::Vector2f childFinalPos(childZoomedX + panOffset.x, childZoomedY + panOffset.y);
-
-        edges.push_back({finalPos, childFinalPos});
-
-        buildTreeLayout(node->children[i], childX, childLevelY,
-                        currentPath + static_cast<char>(i),
-                        stepState, widths, windowWidth, windowHeight);
-
-        startX += childW + 12.0f;
-    }
+    for (auto it = nodePool.begin(); it != nodePool.end(); )
+        it = (it->second.targetAlpha < 1.f && it->second.alpha < 1.f)
+             ? nodePool.erase(it) : ++it;
 }
 
-// ── Visualization update ──────────────────────────────────────────────────────
+// ── update() ──────────────────────────────────────────────────────────────────
+void TrieVisualizer::update(float deltaTime) {
+    globalPulse += deltaTime * 3.5f;
 
-void TrieVisualizer::updateVisualization(float windowWidth, float windowHeight) {
-    visualNodes.clear();
-    edges.clear();
+    for (auto& [path, n] : nodePool) {
+        // Smooth position
+        float t = clamp01(kSmoothSpeed * deltaTime);
+        n.currentPos = lerpVec(n.currentPos, n.targetPos, t);
 
-    if (steps.empty() || !font) return;
+        // Fade alpha
+        float da = kAlphaSpeed * deltaTime * 255.f;
+        if (n.alpha < n.targetAlpha) n.alpha = std::min(n.targetAlpha, n.alpha + da);
+        else                         n.alpha = std::max(n.targetAlpha, n.alpha - da);
+
+        // Smooth radius
+        float dr = kRadiusSpeed * deltaTime * 20.f;
+        if (n.currentRadius < n.targetRadius) n.currentRadius = std::min(n.targetRadius, n.currentRadius + dr);
+        else                                   n.currentRadius = std::max(n.targetRadius, n.currentRadius - dr);
+
+        // Pulse phase
+        if (n.isActive) n.pulsePhase += deltaTime * 4.f;
+        else            n.pulsePhase = 0.f;
+    }
+
+    // Auto-advance steps
+    if ((autoRun || isAnimating) && currentStep < static_cast<int>(steps.size()) - 1) {
+        float stepDelay = 0.65f / std::max(0.1f, playbackSpeed);
+        elapsedTime += deltaTime;
+        if (elapsedTime >= stepDelay) { elapsedTime = 0.f; goToNextStep(); }
+    }
+    if (isAnimating && currentStep >= static_cast<int>(steps.size()) - 1)
+        isAnimating = false;
+}
+
+// ── render() ─────────────────────────────────────────────────────────────────
+void TrieVisualizer::render(sf::RenderWindow& window) {
+    sf::Vector2u ws = window.getSize();
+    float ww = static_cast<float>(ws.x), wh = static_cast<float>(ws.y);
+    if (steps.empty()) return;
 
     const TrieStep& state = steps[currentStep];
 
-    // Build a temporary trie reflecting the state at this step
-    Trie tempTrie;
-    for (const std::string& w : state.words)
-        tempTrie.insert(w);
+    std::map<std::string, TrieNodeRenderInfo> layout;
+    std::vector<std::pair<std::string,std::string>> edgeKeys;
+    computeLayout(state, ww, wh, layout, edgeKeys);
 
-    // During INSERT, show partial path being inserted
-    if (state.operation == "INSERT" && state.activeCharIndex > 0)
-        tempTrie.insert(state.activeWord.substr(0, state.activeCharIndex));
+    float baseRadius = kBaseRadius * zoomLevel;
+    syncNodePool(layout, baseRadius);
 
-    TrieNode* rootNode = tempTrie.getRoot();
-    if (!rootNode) return;
+    // Draw edges
+    for (const auto& [fromPath, toPath] : edgeKeys) {
+        auto itF = nodePool.find(fromPath);
+        auto itT = nodePool.find(toPath);
+        if (itF == nodePool.end() || itT == nodePool.end()) continue;
 
-    std::map<TrieNode*, float> widths;
-    calculateSubtreeWidths(rootNode, widths);
+        bool active = itF->second.isActive || itT->second.isActive;
+        float alpha = std::min(itF->second.alpha, itT->second.alpha);
+        sf::Color ec = active ? kEdgeActive : kEdgeNormal;
+        ec.a = static_cast<std::uint8_t>(std::min(255.f, alpha));
 
-    // Root starts horizontally centred, with some top padding below the toolbar
-    float startX = windowWidth / 2.0f;
-    float startY = 195.0f; // below the top bar
+        sf::Vertex line[] = {
+            sf::Vertex{ itF->second.currentPos, ec },
+            sf::Vertex{ itT->second.currentPos, ec }
+        };
+        window.draw(line, 2, sf::PrimitiveType::Lines);
+    }
 
-    buildTreeLayout(rootNode, startX, startY, "", state, widths, windowWidth, windowHeight);
-}
+    // Draw nodes
+    for (auto& [path, n] : nodePool) {
+        if (n.alpha < 2.f) continue;
 
-// ── Playback controls ─────────────────────────────────────────────────────────
+        float r = n.currentRadius;
+        if (n.isActive) r *= (1.f + 0.08f * std::sin(n.pulsePhase));
 
-void TrieVisualizer::setPlaybackSpeed(float speed) { playbackSpeed = std::max(0.1f, speed); }
+        UI::VisualNode vn(*font, n.label, r);
+        vn.setPosition(n.currentPos);
 
-void TrieVisualizer::setAutoRun(bool value) {
-    autoRun = value;
-    if (!autoRun) elapsedTime = 0.0f;
-}
+        sf::Color fill    = n.fillColor;
+        sf::Color outline = n.outlineColor;
+        fill.a    = static_cast<std::uint8_t>(std::min(255.f, n.alpha));
+        outline.a = fill.a;
+        vn.setFillColor(fill);
+        vn.setOutlineColor(outline);
+        vn.render(window);
+    }
 
-void TrieVisualizer::goToFirstStep() {
-    currentStep = 0;
-    elapsedTime = 0.0f;
-    updateVisualization();
-}
-
-void TrieVisualizer::goToPreviousStep() {
-    if (currentStep > 0) { --currentStep; elapsedTime = 0.0f; updateVisualization(); }
-}
-
-void TrieVisualizer::goToNextStep() {
-    if (currentStep < static_cast<int>(steps.size()) - 1) {
-        ++currentStep; elapsedTime = 0.0f; updateVisualization();
+    // Description
+    if (font && !state.description.empty()) {
+        sf::Text txt(*font, state.description, 20);
+        txt.setFillColor(sf::Color(30, 30, 30));
+        const sf::FloatRect b = txt.getLocalBounds();
+        txt.setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y });
+        txt.setPosition({ ww / 2.f, 165.f });
+        window.draw(txt);
     }
 }
 
-void TrieVisualizer::goToFinalStep() {
-    if (!steps.empty()) {
-        currentStep = static_cast<int>(steps.size()) - 1;
-        elapsedTime = 0.0f;
-        updateVisualization();
-    }
-}
-
-// ── BaseVisualizer interface ──────────────────────────────────────────────────
+// ── Playback ──────────────────────────────────────────────────────────────────
+void TrieVisualizer::setPlaybackSpeed(float s) { playbackSpeed = std::max(0.1f, s); }
+void TrieVisualizer::setAutoRun(bool v)        { autoRun = v; if (!autoRun) elapsedTime = 0.f; }
+void TrieVisualizer::goToFirstStep()    { currentStep = 0; elapsedTime = 0.f; }
+void TrieVisualizer::goToPreviousStep() { if (currentStep > 0) { --currentStep; elapsedTime = 0.f; } }
+void TrieVisualizer::goToNextStep()     { if (currentStep < static_cast<int>(steps.size())-1) { ++currentStep; elapsedTime = 0.f; } }
+void TrieVisualizer::goToFinalStep()    { if (!steps.empty()) { currentStep = static_cast<int>(steps.size())-1; elapsedTime = 0.f; } }
 
 void TrieVisualizer::reset() {
-    trie = Trie();
-    currentWords.clear();
-    steps.clear();
-    currentStep = 0;
-    elapsedTime = 0.0f;
-    visualNodes.clear();
-    edges.clear();
+    trie = Trie(); currentWords.clear(); steps.clear();
+    currentStep = 0; elapsedTime = 0.f; isAnimating = false;
+    nodePool.clear(); edgeList.clear();
 }
 
 std::string TrieVisualizer::getProperties() const {
     std::ostringstream oss;
-    oss << "Trie Visualizer | Step " << (currentStep + 1) << " / " << steps.size();
+    oss << "Trie | Step " << (currentStep+1) << " / " << steps.size();
     if (currentStep < static_cast<int>(steps.size()))
         oss << "\n" << steps[currentStep].description;
     return oss.str();
@@ -322,32 +383,4 @@ std::string TrieVisualizer::getProperties() const {
 
 void TrieVisualizer::processEvents(const sf::Event& event) {
     handleZoomPanEvents(event);
-}
-
-void TrieVisualizer::update(float deltaTime) {
-    if (autoRun && currentStep < static_cast<int>(steps.size()) - 1) {
-        elapsedTime += deltaTime * playbackSpeed;
-        if (elapsedTime >= 1.0f) {
-            goToNextStep();
-            elapsedTime = 0.0f;
-        }
-    }
-}
-
-void TrieVisualizer::render(sf::RenderWindow& window) {
-    sf::Vector2u windowSize = window.getSize();
-    updateVisualization(static_cast<float>(windowSize.x), static_cast<float>(windowSize.y));
-
-    // Draw edges first (behind nodes)
-    for (const auto& edge : edges) {
-        sf::Vertex line[] = {
-            sf::Vertex{edge.first,  sf::Color(120, 140, 200)},
-            sf::Vertex{edge.second, sf::Color(120, 140, 200)}
-        };
-        window.draw(line, 2, sf::PrimitiveType::Lines);
-    }
-
-    // Draw nodes on top
-    for (auto& node : visualNodes)
-        node->render(window);
 }
