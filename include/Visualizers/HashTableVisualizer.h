@@ -10,6 +10,7 @@ struct HashSnapshot {
     std::vector<std::list<HashNode>> tableState;
     int highlightBucket = -1;
     int highlightNodeIdx = -1;
+    int pseudoCodeLine = -1;
 };
 
 class HashTableVisualizer : public BaseVisualizer {
@@ -35,7 +36,7 @@ public:
     
     // --- SNAPSHOT CONTROLS ---
     void clearHistory();
-    void recordState(int bucket = -1, int nodeIdx = -1);
+    void recordState(int bucket = -1, int nodeIdx = -1, int codeLine = -1);
     void setStep(int stepIndex);
 
     IHashTable* getData() { return dataStructure.get(); }
@@ -51,4 +52,6 @@ public:
     void processEvents(const sf::Event& event) override {}
     void setAutoRun(bool value) override {}
     std::string getProperties() const override { return "Hash Table Visualizer"; }
+
+    int getCurrentPseudocodeLine() const override;
 };

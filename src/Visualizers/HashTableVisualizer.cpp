@@ -33,10 +33,11 @@ void HashTableVisualizer::clearHistory() {
     currentStep = 0;
 }
 
-void HashTableVisualizer::recordState(int bucket, int nodeIdx) {
+void HashTableVisualizer::recordState(int bucket, int nodeIdx, int codeLine) {
     HashSnapshot snap;
     snap.highlightBucket = bucket;
     snap.highlightNodeIdx = nodeIdx;
+    snap.pseudoCodeLine = codeLine;
     
     auto* chainingData = dynamic_cast<ChainingHashTable*>(dataStructure.get());
     if (chainingData) {
@@ -184,4 +185,11 @@ void HashTableVisualizer::drawArrow(sf::RenderWindow& window, float x1, float y1
         sf::Vertex{rightPoint, sf::Color::Black}
     };
     window.draw(arrowhead, 3, sf::PrimitiveType::Triangles);
+}
+
+int HashTableVisualizer::getCurrentPseudocodeLine() const {
+    if (history.empty() || currentStep < 0 || currentStep >= (int)history.size()) {
+        return -1; // Trả về -1 để tắt đèn bôi vàng
+    }
+    return history[currentStep].pseudoCodeLine;
 }
