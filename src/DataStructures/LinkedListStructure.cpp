@@ -16,26 +16,19 @@ Node* LinkedList::getHead() const {
     return head;
 }
 
-void LinkedList::insert(int value) {
-    Node* newNode = new Node{value, nullptr};
-    if (!head) {
-        head = newNode;
-        return;
-    }
-
+int LinkedList::getSize() const {
+    int size = 0;
     Node* cur = head;
-    while (cur->next) cur = cur->next;
-    cur->next = newNode;
-}
-
-void LinkedList::insertAtHead(int value) {
-    Node* newNode = new Node{value, head};
-    head = newNode;
+    while (cur) {
+        size++;
+        cur = cur->next;
+    }
+    return size;
 }
 
 void LinkedList::insertAtIndex(int value, int index) {
-    if (index <= 1) {
-        insertAtHead(value);
+    if (index <= 1 || !head) {
+        head = new Node{value, head};
         return;
     }
 

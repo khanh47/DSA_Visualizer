@@ -1,6 +1,5 @@
 #include "LinkedListVisualizer.h"
 #include "ResourceManager.h"
-#include "VisualEdge.h"
 #include <sstream>
 #include <cmath>
 #include <algorithm>
@@ -77,9 +76,7 @@ int LinkedListVisualizer::buildDeleteSteps(int targetIndex) {
     Node* cur = linkedList.getHead();
     if (!cur) return -1;
 
-    int count = 0;
-    Node* temp = cur;
-    while(temp) { count++; temp=temp->next; }
+    int count = linkedList.getSize();
     if (targetIndex > count) {
         recordStep(-1, "Index " + std::to_string(targetIndex) + " out of bounds");
         return -1;
@@ -118,9 +115,7 @@ int LinkedListVisualizer::buildUpdateSteps(int targetIndex) {
     Node* cur = linkedList.getHead();
     if (!cur) return -1;
 
-    int count = 0;
-    Node* temp = cur;
-    while(temp) { count++; temp=temp->next; }
+    int count = linkedList.getSize();
     if (targetIndex > count) {
         recordStep(-1, "Index " + std::to_string(targetIndex) + " out of bounds");
         return -1;
@@ -150,18 +145,11 @@ const LinkedList& LinkedListVisualizer::list() const { return linkedList; }
 void LinkedListVisualizer::insertValue(int value, bool atHead) {
     steps.clear(); currentStep = 0; nodePositions.clear();
 
-    if (atHead) {
-        linkedList.insertAtHead(value);
-    } else {
-        linkedList.insert(value);
-    }
+    int targetIndex = atHead ? 1 : linkedList.getSize() + 1;
+    linkedList.insertAtIndex(value, targetIndex);
 
     // Find index of the newly inserted node
-    int newIndex = 0;
-    if (!atHead) {
-        Node* cur = linkedList.getHead();
-        while (cur && cur->next) { newIndex++; cur = cur->next; }
-    }
+    int newIndex = targetIndex - 1;
 
     recordStep(-1, "Inserted " + std::to_string(value) + (atHead ? " at head" : " at tail"), newIndex);
 
@@ -174,9 +162,7 @@ void LinkedListVisualizer::insertAtIndex(int value, int index) {
     steps.clear(); currentStep = 0; nodePositions.clear();
 
     // Clamp index: 1-based, max = size + 1
-    int size = 0;
-    Node* cur = linkedList.getHead();
-    while (cur) { size++; cur = cur->next; }
+    int size = linkedList.getSize();
     if (index < 1) index = 1;
     if (index > size + 1) index = size + 1;
 
