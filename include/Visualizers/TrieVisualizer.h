@@ -13,7 +13,8 @@
 struct TrieStep {
     std::vector<std::string> words;   // words already committed to the trie
     std::string activeWord;           // word being operated on
-    int activeCharIndex = -1;         // how many chars of activeWord are active (-1 = none)
+    int activeCharIndex  = -1;        // how many chars of activeWord are active (-1 = none)
+    int pseudocodeLine   = -1;        // which pseudocode line to highlight (-1 = none)
     std::string description;
     std::string operation;            // INSERT | INSERT_DONE | SEARCH | SEARCH_FOUND
                                       // SEARCH_FAIL | REMOVE | REMOVE_DONE | REMOVE_FAIL
@@ -69,6 +70,7 @@ public:
     void goToPreviousStep() override;
     void goToNextStep() override;
     void goToFinalStep() override;
+    int  getCurrentPseudocodeLine() const override;
 
     // Operations
     void insertWord(const std::string& word);
@@ -105,7 +107,8 @@ private:
 
     // ── Layout helpers ─────────────────────────────────────────────────────
     void   recordStep(const std::string& activeWord, int charIndex,
-                      const std::string& desc, const std::string& op);
+                      const std::string& desc, const std::string& op,
+                      int pseudocodeLine = -1);
 
     // Compute layout for the trie reflected by the given step
     void   computeLayout(const TrieStep& state,
