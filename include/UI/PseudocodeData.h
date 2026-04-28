@@ -11,6 +11,24 @@ namespace Pseudocode {
 
 // ── Linked List ─────────────────────────────────────────────────────────
 
+inline const std::string kLinkedListInsertHeadTitle = "INSERT AT HEAD";
+inline const std::vector<std::string> kLinkedListInsertHead = {
+    "newNode = new Node(value)",   // 0
+    "newNode->next = head",        // 1
+    "head = newNode",              // 2
+};
+
+inline const std::string kLinkedListInsertTailTitle = "INSERT AT TAIL";
+inline const std::vector<std::string> kLinkedListInsertTail = {
+    "newNode = new Node(value)",   // 0
+    "if head == null",             // 1
+    "    head = newNode; return",  // 2
+    "cur = head",                  // 3
+    "while cur->next != null",     // 4
+    "    cur = cur->next",         // 5
+    "cur->next = newNode",         // 6
+};
+
 inline const std::string kLinkedListSearchTitle = "SEARCH";
 inline const std::vector<std::string> kLinkedListSearch = {
     "cur = head",                  // 0
