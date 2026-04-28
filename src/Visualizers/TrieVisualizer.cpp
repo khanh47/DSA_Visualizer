@@ -38,14 +38,22 @@ TrieVisualizer::TrieVisualizer() {
 
 // ── Step recording ────────────────────────────────────────────────────────────
 void TrieVisualizer::recordStep(const std::string& activeWord, int charIndex,
-                                 const std::string& desc, const std::string& op) {
+                                 const std::string& desc, const std::string& op,
+                                 int pseudocodeLine) {
     TrieStep step;
     step.words           = currentWords;
     step.activeWord      = activeWord;
     step.activeCharIndex = charIndex;
     step.description     = desc;
     step.operation       = op;
+    step.pseudocodeLine  = pseudocodeLine;
     steps.push_back(step);
+}
+
+int TrieVisualizer::getCurrentPseudocodeLine() const {
+    if (currentStep >= 0 && currentStep < static_cast<int>(steps.size()))
+        return steps[currentStep].pseudocodeLine;
+    return -1;
 }
 
 // ── Operations ────────────────────────────────────────────────────────────────
@@ -55,16 +63,26 @@ void TrieVisualizer::insertWord(const std::string& word) {
     isAnimating = true;
     elapsedTime = 0.f;
 
-    recordStep("", -1, "Insert \"" + word + "\": start at root", "INSERT");
-    for (size_t i = 1; i <= word.length(); ++i)
+    // line 0: cur = root
+    recordStep("", -1, "Insert \"" + word + "\": cur = root", "INSERT", 0);
+    for (size_t i = 1; i <= word.length(); ++i) {
+        // line 1: for each char
+        recordStep(word, static_cast<int>(i) - 1,
+                   "Insert \"" + word + "\": check children['" + word[i-1] + "']",
+                   "INSERT", 1);
+        // line 2-3: create node if missing, line 4: cur = children[c]
         recordStep(word, static_cast<int>(i),
                    "Insert \"" + word + "\": follow '" + word[i-1]
-                   + "' (prefix \"" + word.substr(0,i) + "\")", "INSERT");
+                   + "' (prefix \"" + word.substr(0,i) + "\")",
+                   "INSERT", i <= word.length() ? 4 : 3);
+    }
 
     trie.insert(word);
     currentWords.push_back(word);
+    // line 5: cur.isEndOfWord = true
     recordStep(word, static_cast<int>(word.length()),
-               "Done — \"" + word + "\" inserted. End-of-word node is green.", "INSERT_DONE");
+               "Done - \"" + word + "\" inserted. End-of-word node marked green.",
+               "INSERT_DONE", 5);
     currentStep = 0;
 }
 
@@ -74,31 +92,41 @@ void TrieVisualizer::searchWord(const std::string& word) {
     isAnimating = true;
     elapsedTime = 0.f;
 
-    recordStep("", -1, "Search \"" + word + "\": start at root", "SEARCH");
+    // line 0: cur = root
+    recordStep("", -1, "Search \"" + word + "\": cur = root", "SEARCH", 0);
     TrieNode* cur = trie.getRoot();
     bool found = true;
     for (size_t i = 0; i < word.length(); ++i) {
         unsigned char ch = static_cast<unsigned char>(word[i]);
+        // line 1: for each char, line 2: check children
+        recordStep(word, static_cast<int>(i),
+                   "Search \"" + word + "\": check children['" + word[i] + "']",
+                   "SEARCH", 2);
         if (cur && cur->children[ch]) {
             cur = cur->children[ch];
+            // line 4: cur = children[c]
             recordStep(word, static_cast<int>(i+1),
                        "Search \"" + word + "\": found '" + word[i]
-                       + "' (prefix \"" + word.substr(0,i+1) + "\")", "SEARCH");
+                       + "' - move to next node", "SEARCH", 4);
         } else {
+            // line 3: return NOT_FOUND
             recordStep(word, static_cast<int>(i),
-                       "Search \"" + word + "\": '" + word[i] + "' missing — NOT FOUND",
-                       "SEARCH_FAIL");
+                       "Search \"" + word + "\": '" + word[i] + "' missing - NOT FOUND",
+                       "SEARCH_FAIL", 3);
             found = false; break;
         }
     }
     if (found) {
         if (cur && cur->isEndOfWord)
+            // line 5: return cur.isEndOfWord (true)
             recordStep(word, static_cast<int>(word.length()),
-                       "\"" + word + "\" FOUND! End-of-word marker present.", "SEARCH_FOUND");
+                       "\"" + word + "\" FOUND! End-of-word marker is set.",
+                       "SEARCH_FOUND", 5);
         else
+            // line 5: return cur.isEndOfWord (false)
             recordStep(word, static_cast<int>(word.length()),
-                       "\"" + word + "\" NOT FOUND — prefix only, not a complete word.",
-                       "SEARCH_FAIL");
+                       "\"" + word + "\" NOT FOUND - prefix only, not a complete word.",
+                       "SEARCH_FAIL", 5);
     }
     currentStep = 0;
 }
@@ -109,19 +137,28 @@ void TrieVisualizer::removeWord(const std::string& word) {
     isAnimating = true;
     elapsedTime = 0.f;
 
-    recordStep("", -1, "Remove \"" + word + "\": start at root", "REMOVE");
+    // line 0: cur = root
+    recordStep("", -1, "Remove \"" + word + "\": cur = root", "REMOVE", 0);
     TrieNode* cur = trie.getRoot();
     bool ok = true;
     for (size_t i = 0; i < word.length(); ++i) {
         unsigned char ch = static_cast<unsigned char>(word[i]);
+        // line 2: check children
+        recordStep(word, static_cast<int>(i),
+                   "Remove \"" + word + "\": check children['" + word[i] + "']",
+                   "REMOVE", 2);
         if (cur && cur->children[ch]) {
             cur = cur->children[ch];
+            // line 4: cur = children[c]
             recordStep(word, static_cast<int>(i+1),
                        "Remove \"" + word + "\": traversing '" + word[i]
-                       + "' (prefix \"" + word.substr(0,i+1) + "\")", "REMOVE");
+                       + "' (prefix \"" + word.substr(0,i+1) + "\")",
+                       "REMOVE", 4);
         } else {
+            // line 3: return (word not found)
             recordStep(word, static_cast<int>(i),
-                       "\"" + word + "\" not in trie — nothing to remove.", "REMOVE_FAIL");
+                       "\"" + word + "\" not in trie - nothing to remove.",
+                       "REMOVE_FAIL", 3);
             ok = false; break;
         }
     }
@@ -129,7 +166,9 @@ void TrieVisualizer::removeWord(const std::string& word) {
         trie.remove(word);
         auto it = std::find(currentWords.begin(), currentWords.end(), word);
         if (it != currentWords.end()) currentWords.erase(it);
-        recordStep("", -1, "Done — \"" + word + "\" removed.", "REMOVE_DONE");
+        // line 5: isEndOfWord = false, line 6: prune
+        recordStep("", -1, "Done - \"" + word + "\" removed. Unused nodes pruned.",
+                   "REMOVE_DONE", 5);
     }
     currentStep = 0;
 }
@@ -348,15 +387,7 @@ void TrieVisualizer::render(sf::RenderWindow& window) {
         vn.render(window);
     }
 
-    // Description
-    if (font && !state.description.empty()) {
-        sf::Text txt(*font, state.description, 20);
-        txt.setFillColor(sf::Color(30, 30, 30));
-        const sf::FloatRect b = txt.getLocalBounds();
-        txt.setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y });
-        txt.setPosition({ ww / 2.f, 165.f });
-        window.draw(txt);
-    }
+    // Description is shown via VisualizationScene::displayStatus — no drawing needed here
 }
 
 // ── Playback ──────────────────────────────────────────────────────────────────
