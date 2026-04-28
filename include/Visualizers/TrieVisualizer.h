@@ -85,7 +85,7 @@ private:
     std::vector<TrieStep>      steps;
     int                        currentStep   = 0;
     float                      playbackSpeed = 1.0f;
-    bool                       autoRun       = false;
+    bool                       autoRun       = true;
     float                      elapsedTime   = 0.0f;
     sf::Font*                  font          = nullptr;
 

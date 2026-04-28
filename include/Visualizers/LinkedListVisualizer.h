@@ -50,7 +50,7 @@ private:
     std::vector<InsertStep> steps;
     int currentStep = 0;
     float playbackSpeed = 1.0f;
-    bool autoRun = false;
+    bool autoRun = true;
     bool isAnimating = false;  // Auto-plays animation when an operation is triggered
     float elapsedTime = 0.0f;
 
