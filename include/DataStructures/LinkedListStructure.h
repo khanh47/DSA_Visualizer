@@ -15,7 +15,7 @@ public:
 
     void insert(int value);
     void insertAtHead(int value);
-    bool search(int value);
+    void insertAtIndex(int value, int index);
     void remove(int index);
     void update(int index, int newVal);
 

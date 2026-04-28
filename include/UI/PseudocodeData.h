@@ -11,22 +11,22 @@ namespace Pseudocode {
 
 // ── Linked List ─────────────────────────────────────────────────────────
 
+inline const std::string kLinkedListInsertHeadTitle = "INSERT AT HEAD";
+inline const std::vector<std::string> kLinkedListInsertHead = {
+    "newNode = new Node(value)",   // 0
+    "newNode->next = head",        // 1
+    "head = newNode",              // 2
+};
+
 inline const std::string kLinkedListInsertTailTitle = "INSERT AT TAIL";
 inline const std::vector<std::string> kLinkedListInsertTail = {
-    "node = new Node(value)",      // 0
+    "newNode = new Node(value)",   // 0
     "if head == null",             // 1
-    "    head = node; return",     // 2
+    "    head = newNode; return",  // 2
     "cur = head",                  // 3
     "while cur->next != null",     // 4
     "    cur = cur->next",         // 5
-    "cur->next = node",            // 6
-};
-
-inline const std::string kLinkedListInsertHeadTitle = "INSERT AT HEAD";
-inline const std::vector<std::string> kLinkedListInsertHead = {
-    "node = new Node(value)",      // 0
-    "node->next = head",           // 1
-    "head = node",                 // 2
+    "cur->next = newNode",         // 6
 };
 
 inline const std::string kLinkedListSearchTitle = "SEARCH";
@@ -68,6 +68,39 @@ inline const std::vector<std::string> kKruskalMain = {
     "    if find(u) != find(v)",          // 3
     "        union(u, v); add edge",      // 4
     "if mst.size == n - 1: return mst",   // 5
+};
+
+// ── Trie ─────────────────────────────────────────────────────────────────
+
+inline const std::string kTrieInsertTitle = "INSERT";
+inline const std::vector<std::string> kTrieInsert = {
+    "cur = root",                          // 0
+    "for each char c in word",             // 1
+    "    if cur.children[c] == null",      // 2
+    "        cur.children[c] = new Node",  // 3
+    "    cur = cur.children[c]",           // 4
+    "cur.isEndOfWord = true",              // 5
+};
+
+inline const std::string kTrieSearchTitle = "SEARCH";
+inline const std::vector<std::string> kTrieSearch = {
+    "cur = root",                          // 0
+    "for each char c in word",             // 1
+    "    if cur.children[c] == null",      // 2
+    "        return NOT_FOUND",            // 3
+    "    cur = cur.children[c]",           // 4
+    "return cur.isEndOfWord",              // 5
+};
+
+inline const std::string kTrieDeleteTitle = "DELETE";
+inline const std::vector<std::string> kTrieDelete = {
+    "cur = root",                          // 0
+    "for each char c in word",             // 1
+    "    if cur.children[c] == null",      // 2
+    "        return (word not found)",     // 3
+    "    cur = cur.children[c]",           // 4
+    "cur.isEndOfWord = false",             // 5
+    "prune unused nodes if any",           // 6
 };
 
 } // namespace Pseudocode

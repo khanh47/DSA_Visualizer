@@ -1,81 +1,88 @@
 #include "TrieScene.h"
+#include "TrieVisualizer.h"
+#include "PseudocodeData.h"
 #include "ResourceManager.h"
-#include <iostream>
 
 TrieScene::TrieScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
     initializeOperationMenu();
-    // TODO: Initialize Trie-specific visualization.
-    // TODO: Create TrieVisualizer and set it via setVisualizer().
+    auto* trieViz = new TrieVisualizer();
+    setVisualizer(trieViz);
+    displayStatus("Trie ready. Use Insert / Search / Delete.");
 }
 
 void TrieScene::onInsert(const std::string& value) {
-    // TODO: Insert value into Trie structure.
-    displayStatus("Inserted: " + value);
+    if (value.empty()) { displayStatus("Please enter a word to insert."); return; }
+    auto* v = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (v) {
+        if (pseudocodePanel)
+            pseudocodePanel->setPseudocode(Pseudocode::kTrieInsertTitle,
+                                           Pseudocode::kTrieInsert);
+        v->insertWord(value);
+        displayStatus("Inserting: \"" + value + "\"");
+    }
 }
 
 void TrieScene::onSearch(const std::string& value) {
-    // TODO: Search for value in Trie structure.
-    displayStatus("Searching: " + value);
+    if (value.empty()) { displayStatus("Please enter a word to search."); return; }
+    auto* v = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (v) {
+        if (pseudocodePanel)
+            pseudocodePanel->setPseudocode(Pseudocode::kTrieSearchTitle,
+                                           Pseudocode::kTrieSearch);
+        v->searchWord(value);
+        displayStatus("Searching: \"" + value + "\"");
+    }
 }
 
 void TrieScene::onDelete(const std::string& value) {
-    // TODO: Delete value from Trie structure.
-    displayStatus("Deleted: " + value);
+    if (value.empty()) { displayStatus("Please enter a word to delete."); return; }
+    auto* v = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (v) {
+        if (pseudocodePanel)
+            pseudocodePanel->setPseudocode(Pseudocode::kTrieDeleteTitle,
+                                           Pseudocode::kTrieDelete);
+        v->removeWord(value);
+        displayStatus("Deleting: \"" + value + "\"");
+    }
 }
 
 void TrieScene::onUpdate(const std::string& key, const std::string& value) {
-    // TODO: Update Trie node/value mapping.
-    displayStatus("Updating " + key + " with: " + value);
+    if (key.empty() || value.empty()) {
+        displayStatus("Please enter both old and new words.");
+        return;
+    }
+    auto* v = dynamic_cast<TrieVisualizer*>(visualizer.get());
+    if (v) {
+        // Update = delete old + insert new; show insert pseudocode for the final step
+        if (pseudocodePanel)
+            pseudocodePanel->setPseudocode(Pseudocode::kTrieInsertTitle,
+                                           Pseudocode::kTrieInsert);
+        v->removeWord(key);
+        v->insertWord(value);
+        displayStatus("Updated \"" + key + "\" -> \"" + value + "\"");
+    }
 }
 
 void TrieScene::onReset() {
-    if (visualizer) {
-        visualizer->reset();
-    }
+    if (visualizer) visualizer->reset();
+    if (pseudocodePanel) pseudocodePanel->hide();
     displayStatus("Trie reset.");
 }
 
 void TrieScene::onPlaybackSpeedChanged(float speed) {
-    if (visualizer) {
-        visualizer->setPlaybackSpeed(speed);
-    }
+    if (visualizer) visualizer->setPlaybackSpeed(speed);
 }
 
 void TrieScene::onTogglePlaybackMode(bool autoRun) {
-    if (visualizer) {
-        visualizer->setAutoRun(autoRun);
-    }
-    displayStatus(autoRun ? "Playback mode: auto" : "Playback mode: manual");
+    if (visualizer) visualizer->setAutoRun(autoRun);
+    displayStatus(autoRun ? "Playback: auto" : "Playback: manual");
 }
 
-void TrieScene::onGoToFirstStep() {
-    if (visualizer) {
-        visualizer->goToFirstStep();
-    }
-    displayStatus("Go to first step.");
-}
-
-void TrieScene::onGoToPreviousStep() {
-    if (visualizer) {
-        visualizer->goToPreviousStep();
-    }
-    displayStatus("Go to previous step.");
-}
-
-void TrieScene::onGoToNextStep() {
-    if (visualizer) {
-        visualizer->goToNextStep();
-    }
-    displayStatus("Go to next step.");
-}
-
-void TrieScene::onGoToFinalStep() {
-    if (visualizer) {
-        visualizer->goToFinalStep();
-    }
-    displayStatus("Go to final step.");
-}
+void TrieScene::onGoToFirstStep()    { if (visualizer) visualizer->goToFirstStep(); }
+void TrieScene::onGoToPreviousStep() { if (visualizer) visualizer->goToPreviousStep(); }
+void TrieScene::onGoToNextStep()     { if (visualizer) visualizer->goToNextStep(); }
+void TrieScene::onGoToFinalStep()    { if (visualizer) visualizer->goToFinalStep(); }
 
 std::string TrieScene::getSceneTitle() const {
     return "Trie Visualization";

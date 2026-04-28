@@ -2,7 +2,6 @@
 #include "LinkedListVisualizer.h"
 #include "PseudocodeData.h"
 #include "ResourceManager.h"
-#include <iostream>
 
 LinkedListScene::LinkedListScene(SceneManager& sceneManager)
     : VisualizationScene(sceneManager) {
@@ -20,20 +19,16 @@ void LinkedListScene::onInsert(const std::string& value) {
             auto* llVisualizer = dynamic_cast<LinkedListVisualizer*>(visualizer.get());
             if (llVisualizer) {
                 std::string option = operationMenu ? operationMenu->getInsertOption() : "";
-                bool atHead = (option == "At Head");
 
-                // Set pseudocode before running the operation
-                if (pseudocodePanel) {
-                    if (atHead) {
-                        pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertHeadTitle,
-                                                       Pseudocode::kLinkedListInsertHead);
-                    } else {
-                        pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertTailTitle,
-                                                       Pseudocode::kLinkedListInsertTail);
-                    }
+                if (option == "At Index") {
+                    std::string indexStr = operationMenu ? operationMenu->getInsertIndex() : "";
+                    if (indexStr.empty()) return;
+                    int index = std::stoi(indexStr);
+                    llVisualizer->insertAtIndex(val, index);
+                } else {
+                    bool atHead = (option == "At Head");
+                    llVisualizer->insertValue(val, atHead);
                 }
-
-                llVisualizer->insertValue(val, atHead);
             }
         }
     } catch (const std::exception& e) {

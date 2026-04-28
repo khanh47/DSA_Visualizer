@@ -39,6 +39,7 @@ public:
     int getCurrentPseudocodeLine() const override;
 
     void insertValue(int value, bool atHead = false);
+    void insertAtIndex(int value, int index);
     void deleteByIndex(int index);
     void searchValue(int value);
     void updateByIndex(int index, int newVal);

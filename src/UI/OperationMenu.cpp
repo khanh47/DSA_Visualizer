@@ -60,6 +60,13 @@ std::string OperationMenu::getInsertOption() const {
     return "At Tail";
 }
 
+std::string OperationMenu::getInsertIndex() const {
+    if (insertIndexTextBox) {
+        return insertIndexTextBox->getText();
+    }
+    return "";
+}
+
 std::size_t OperationMenu::getInputCount() const {
     return inputTextBoxes.size();
 }
@@ -74,6 +81,10 @@ void OperationMenu::processEvents(const sf::Event& event) {
     if (insertTypeSelectBox) {
         insertTypeSelectBox->processEvent(event);
     }
+
+    if (insertIndexTextBox && insertTypeSelectBox && insertTypeSelectBox->getSelected() == "At Index") {
+        insertIndexTextBox->processEvent(event);
+    }
 }
 
 void OperationMenu::update(float deltaTime) {
@@ -86,6 +97,10 @@ void OperationMenu::render(sf::RenderWindow& window) {
     }
 
     inputTextBoxes.render(window);
+
+    if (insertIndexTextBox && insertTypeSelectBox && insertTypeSelectBox->getSelected() == "At Index") {
+        insertIndexTextBox->render(window);
+    }
 
     if (insertTypeSelectBox) {
         insertTypeSelectBox->render(window);
@@ -103,9 +118,10 @@ void OperationMenu::buildUI() {
     const float buttonWidth = 120.0f;
     const float inputWidth = 90.0f;
     const float selectWidth = 130.0f;
+    const float indexInputWidth = 70.0f;
     const float elementGap = 8.0f;
     const float inputGap = 20.0f;
-    const float blockGap = isLinkedList ? 100.0f : 75.0f;
+    const float blockGap = isLinkedList ? 50.0f : 75.0f;
     const float height = 42.0f;
     const float currentY = position.y;
 
@@ -123,10 +139,20 @@ void OperationMenu::buildUI() {
             if (item.type == OperationType::UPDATE) {
                 totalWidth += inputWidth * 2.0f + elementGap;
             } else if (item.type == OperationType::INSERT) {
-                if (isHashTable) totalWidth += inputWidth * 2.0f + elementGap;
-                else totalWidth += inputWidth + (isLinkedList ? elementGap + selectWidth : 0.0f);
-            } else {
+            // NẾU LÀ HASH TABLE: 2 ô (Key, Value)
+            if (isHashTable) {
+                totalWidth += inputWidth * 2.0f + elementGap;
+            } 
+            // NẾU LÀ LINKED LIST: Ô Value + Dropdown + Ô Index
+            else if (isLinkedList) {
+                totalWidth += inputWidth + elementGap + selectWidth + elementGap + indexInputWidth;
+            } 
+            // NẾU LÀ CÁC THUẬT TOÁN KHÁC (Trie...): Chỉ 1 ô Value
+            else {
                 totalWidth += inputWidth;
+            }
+            } else {
+            totalWidth += inputWidth;
             }
         }
 
@@ -192,11 +218,10 @@ void OperationMenu::buildUI() {
                 insertTypeSelectBox = std::make_unique<UI::SelectBox>(
                     sf::Vector2f(currentX, currentY),
                     sf::Vector2f(selectWidth, height),
-                    std::vector<std::string>{"At Tail", "At Head"},
+                    std::vector<std::string>{"At Tail", "At Head", "At Index"},
                     20
                 );
                 currentX += selectWidth;
-                }   
             }
         } else {
             std::string placeholder = "Value";

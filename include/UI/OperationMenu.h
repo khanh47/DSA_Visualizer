@@ -22,6 +22,7 @@ private:
     std::unique_ptr<UI::ButtonMenu> menu;
     UI::TextBoxGroup inputTextBoxes;
     std::unique_ptr<UI::SelectBox> insertTypeSelectBox;
+    std::unique_ptr<UI::TextBox> insertIndexTextBox;
     std::vector<OperationMenuItem> menuItems;
     VisualizationScene& scene;
     sf::RectangleShape background;
@@ -36,6 +37,7 @@ public:
     void render(sf::RenderWindow& window);
     std::string getInputValue(std::size_t index = 0) const;
     std::string getInsertOption() const;
+    std::string getInsertIndex() const;
     std::size_t getInputCount() const;
 
 private:

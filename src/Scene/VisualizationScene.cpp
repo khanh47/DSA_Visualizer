@@ -3,6 +3,7 @@
 #include "OperationCommand.h"
 #include "SceneCommand.h"
 #include <iostream>
+#include <algorithm>
 
 VisualizationScene::VisualizationScene(SceneManager& sceneManager)
     : manager(sceneManager),
