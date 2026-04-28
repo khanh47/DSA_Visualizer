@@ -46,8 +46,7 @@ SelectBox::SelectBox(const sf::Vector2f& position,
         float optY = position.y + rowHeight * static_cast<float>(i + 1);
 
         // Only round bottom corners on the last option
-        sf::ConvexShape optionBox = makeRoundedRect(size,
-            (i == options.size() - 1) ? kCornerRadius : 0.0f);
+        sf::ConvexShape optionBox = makeRoundedRect(size, 0.0f);
         optionBox.setPosition({position.x, optY});
         optionBox.setFillColor(kNormalButtonColor);
         optionBox.setOutlineThickness(0.0f);

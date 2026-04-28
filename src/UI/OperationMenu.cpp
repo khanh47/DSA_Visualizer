@@ -10,13 +10,6 @@ std::vector<OperationMenuItem> getOperationMenuItems(const std::string& sceneTit
             {"Run", OperationType::RUN},
             {"Reset", OperationType::RESET}
         };
-    } else if (sceneTitle == "Linked List Visualization") {
-        return {
-            {"Insert", OperationType::INSERT},
-            {"Delete", OperationType::DELETE},
-            {"Search", OperationType::SEARCH},
-            {"Update", OperationType::UPDATE}
-        };
     } else {
         return {
             {"Insert", OperationType::INSERT},
@@ -115,51 +108,49 @@ void OperationMenu::buildUI() {
     const bool isLinkedList = scene.getSceneTitle() == "Linked List Visualization";
     const bool isHashTable = (scene.getSceneTitle() == "Hash Table Visualization");
 
-    const float buttonWidth = 120.0f;
-    const float inputWidth = 90.0f;
-    const float selectWidth = 130.0f;
-    const float indexInputWidth = 70.0f;
+    const float buttonWidth = 110.0f;
+    const float inputWidth = 85.0f;
+    const float selectWidth = 120.0f;
+    const float indexInputWidth = 65.0f;
     const float elementGap = 8.0f;
-    const float inputGap = 20.0f;
-    const float blockGap = isLinkedList ? 50.0f : 75.0f;
+    const float inputGap = 15.0f;
     const float height = 42.0f;
     const float currentY = position.y;
 
-    float totalWidth = 0.0f;
+    float elementsWidth = 0.0f;
     for (std::size_t i = 0; i < menuItems.size(); ++i) {
         const auto& item = menuItems[i];
-        totalWidth += buttonWidth;
+        elementsWidth += buttonWidth;
 
         if (item.type != OperationType::RANDOM &&
             item.type != OperationType::RUN &&
             item.type != OperationType::RESET) {
             
-            totalWidth += inputGap;
+            elementsWidth += inputGap;
 
             if (item.type == OperationType::UPDATE) {
-                totalWidth += inputWidth * 2.0f + elementGap;
+                elementsWidth += inputWidth * 2.0f + elementGap;
             } else if (item.type == OperationType::INSERT) {
-            // NẾU LÀ HASH TABLE: 2 ô (Key, Value)
-            if (isHashTable) {
-                totalWidth += inputWidth * 2.0f + elementGap;
-            } 
-            // NẾU LÀ LINKED LIST: Ô Value + Dropdown + Ô Index
-            else if (isLinkedList) {
-                totalWidth += inputWidth + elementGap + selectWidth + elementGap + indexInputWidth;
-            } 
-            // NẾU LÀ CÁC THUẬT TOÁN KHÁC (Trie...): Chỉ 1 ô Value
-            else {
-                totalWidth += inputWidth;
-            }
+                if (isHashTable) {
+                    elementsWidth += inputWidth * 2.0f + elementGap;
+                } else if (isLinkedList) {
+                    elementsWidth += inputWidth + elementGap + selectWidth + elementGap + indexInputWidth;
+                } else {
+                    elementsWidth += inputWidth;
+                }
             } else {
-            totalWidth += inputWidth;
+                elementsWidth += inputWidth;
             }
-        }
-
-        if (i < menuItems.size() - 1) {
-            totalWidth += blockGap;
         }
     }
+
+    float blockGap = 50.0f;
+    if (menuItems.size() > 1) {
+        float availableForGaps = size.x - elementsWidth;
+        blockGap = std::max(15.0f, std::min(75.0f, availableForGaps / static_cast<float>(menuItems.size() - 1)));
+    }
+    
+    float totalWidth = elementsWidth + blockGap * static_cast<float>(menuItems.size() - 1);
 
     float currentX = position.x + std::max(0.0f, (size.x - totalWidth) * 0.5f);
 
