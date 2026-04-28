@@ -222,6 +222,7 @@ void OperationMenu::buildUI() {
                     20
                 );
                 currentX += selectWidth;
+                }
             }
         } else {
             std::string placeholder = "Value";
