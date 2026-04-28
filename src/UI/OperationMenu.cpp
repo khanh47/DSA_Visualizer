@@ -98,6 +98,7 @@ void OperationMenu::buildUI() {
 
     menuItems = getOperationMenuItems(scene.getSceneTitle());
     const bool isLinkedList = scene.getSceneTitle() == "Linked List Visualization";
+    const bool isHashTable = (scene.getSceneTitle() == "Hash Table Visualization");
 
     const float buttonWidth = 120.0f;
     const float inputWidth = 90.0f;
@@ -122,10 +123,8 @@ void OperationMenu::buildUI() {
             if (item.type == OperationType::UPDATE) {
                 totalWidth += inputWidth * 2.0f + elementGap;
             } else if (item.type == OperationType::INSERT) {
-                totalWidth += inputWidth;
-                if (isLinkedList) {
-                    totalWidth += elementGap + selectWidth;
-                }
+                if (isHashTable) totalWidth += inputWidth * 2.0f + elementGap;
+                else totalWidth += inputWidth + (isLinkedList ? elementGap + selectWidth : 0.0f);
             } else {
                 totalWidth += inputWidth;
             }
@@ -163,23 +162,30 @@ void OperationMenu::buildUI() {
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                isLinkedList ? "Index" : "Old", 20, 6
+                isHashTable ? "Key" : (isLinkedList ? "Index" : "Old"), 20, 6
             ));
             currentX += inputWidth + elementGap;
 
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                "New", 20, 6
+                isHashTable ? "New value" : "New", 20, 6
             ));
             currentX += inputWidth;
         } else if (item.type == OperationType::INSERT) {
-            inputTextBoxes.add(std::make_unique<UI::TextBox>(
-                sf::Vector2f(currentX, currentY),
-                sf::Vector2f(inputWidth, height),
-                "Value", 20, 6
-            ));
-            currentX += inputWidth;
+            if (isHashTable) {
+                // Hash Table hiện 2 ô: Key và Value
+                inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY), sf::Vector2f(inputWidth, height), "Key", 20, 6));
+                currentX += inputWidth + elementGap;
+                inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY), sf::Vector2f(inputWidth, height), "Value", 20, 6));
+                currentX += inputWidth;
+            } else {
+                // Các cái khác giữ nguyên 1 ô Value
+                inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY), sf::Vector2f(inputWidth, height), "Value", 20, 6));
+                currentX += inputWidth;
 
             if (isLinkedList) {
                 currentX += elementGap;
@@ -190,19 +196,23 @@ void OperationMenu::buildUI() {
                     20
                 );
                 currentX += selectWidth;
+                }   
             }
         } else {
             std::string placeholder = "Value";
             if (item.type == OperationType::DELETE && isLinkedList) {
                 placeholder = "Index";
             }
+            if (isHashTable) placeholder = "Key";
+
+
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
                 placeholder, 20, 6
             ));
             currentX += inputWidth;
-        }
+            }
 
         currentX += blockGap;
     }

@@ -103,17 +103,13 @@ void VisualizationScene::update(float deltaTime) {
                 onGoToNextStep(); // Tự động gọi hàm sang bước tiếp theo
             }
         }
-/*
-        // Tốc độ đếm giờ phụ thuộc vào thanh trượt
-        statusTimer += deltaTime * playbackSpeedScale; 
 
-        // Đặt mốc cơ bản là 1.5 giây (khi ở mức 1.0x)
-        if (statusTimer >= 1.5f) { 
-            statusTimer = 0.0f;
-            currentStatusIndex++;
-            statusText.setString(statusQueue[currentStatusIndex]);
+        if (isAuto && isSequencePlaying) {
+            statusTimer += deltaTime * playbackSpeedScale; 
+            if (statusTimer >= 1.5f) { 
+                onGoToNextStep(); 
+            }
         }
-*/
     }
 
 }
@@ -188,6 +184,7 @@ void VisualizationScene::displayStatusSequence(const std::vector<std::string>& s
     statusQueue = sequence;
     currentStatusIndex = 0;
     statusTimer = 0.0f;
+    isSequencePlaying = true;
     
     // Ngay lập tức hiển thị dòng đầu tiên trong danh sách
     if (!statusQueue.empty()) {
@@ -201,6 +198,11 @@ void VisualizationScene::onGoToNextStep() {
         currentStatusIndex++;
         statusText.setString(statusQueue[currentStatusIndex]);
         statusTimer = 0.0f; // Reset đồng hồ
+    }
+
+    if (currentStatusIndex == (int)statusQueue.size() - 1 && isSequencePlaying) {
+        isSequencePlaying = false; // Tắt cờ
+        onStatusSequenceFinished(); // Báo cho Hash Table biết!
     }
 }
 

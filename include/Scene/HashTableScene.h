@@ -6,9 +6,7 @@
 
 class HashTableScene : public VisualizationScene {
 private:
-    std::unique_ptr<UI::SelectBox> modeSelectBox;
     HashTableVisualizer* getHashVisualizer();
-    std::string getHashMathString(const std::string& key);
 
         // --- CÁC BIẾN RIÊNG CHO HASH TABLE ---
     sf::Text formulaText;             // Chữ hiển thị công thức ở phía trên
@@ -16,8 +14,10 @@ private:
     float mathTimer = 0.0f;           // Đồng hồ đếm bước
     int currentStepIndex = -1;        // Chỉ số bước hiện tại
 
-    // Hàm hỗ trợ
-    void startMathSequence(const std::string& key);
+
+    int pendingAnimIndex = -1; // Lưu tạm Index đợi vẽ
+    int pendingOpType = 0; // --- THÊM BIẾN NÀY (0: Không có gì, 1: Insert, 2: Delete) ---
+    void onStatusSequenceFinished() override; // Hàm nhận tín hiệu từ lớp cha
 
 public:
     HashTableScene(SceneManager& sceneManager);
@@ -25,7 +25,7 @@ public:
     void processEvents(const sf::Event& event) override;
     void render(sf::RenderWindow& window) override;
 
-    void onInsert(const std::string& value) override;
+    void onInsert(const std::string& key, const std::string& value) override;
     void onSearch(const std::string& value) override;
     void onDelete(const std::string& value) override;
     void onUpdate(const std::string& key, const std::string& value) override;
