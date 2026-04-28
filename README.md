@@ -79,6 +79,7 @@ target_link_libraries(DSA_Visualizer PRIVATE
 Open a terminal (MSYS2 MINGW64 or any terminal with MinGW on `PATH`) in the project root and run:
 
 ```bash
+rm -rf build/
 cmake -S . -B build -G "MinGW Makefiles"
 cmake --build build
 ```
