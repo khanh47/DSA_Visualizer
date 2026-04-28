@@ -25,6 +25,9 @@ public:
     void render(sf::RenderWindow& window) override;
 
     virtual void onInsert(const std::string& value) { (void)value; }
+    // HÀM MỚI (Chỉ dành cho Hash Table hoặc các cấu trúc Key-Value sau này)
+    virtual void onInsert(const std::string& key, const std::string& value) { (void)key; (void)value; }
+
     virtual void onSearch(const std::string& value) { (void)value; }
     virtual void onDelete(const std::string& value) { (void)value; }
     virtual void onUpdate(const std::string& key, const std::string& value) {
@@ -66,4 +69,7 @@ protected:
     float playbackSpeedScale = 1.0f;
 
     void displayStatusSequence(const std::vector<std::string>& sequence);
+
+    bool isSequencePlaying = false; // Đánh dấu chữ đang chạy
+    virtual void onStatusSequenceFinished() {} // Hàm sự kiện (Callback)
 };

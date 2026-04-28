@@ -26,4 +26,6 @@ public:
 
     // Specific to chaining (Visualizer will cast to this class to get the 2D data)
     const std::vector<std::list<HashNode>>& getTable() const { return table; }
+
+    void highlightNode(int bucketIndex, int nodeDepth);
 };

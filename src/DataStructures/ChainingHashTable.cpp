@@ -28,8 +28,9 @@ bool ChainingHashTable::insert(const std::string& key, const std::string& value)
     for (auto& node : table[index]) {
         if (node.key == key) return false; // Key exists
     }
+
     
-    table[index].push_back({key, value, true});
+    table[index].push_back({key, value, false});
     size++;
     return true;
 }
@@ -67,4 +68,21 @@ bool ChainingHashTable::update(const std::string& key, const std::string& value)
         return true;
     }
     return false;
+}
+
+void ChainingHashTable::highlightNode(int bucketIndex, int nodeDepth) {
+    if (bucketIndex < 0 || bucketIndex >= capacity) return;
+    
+    // reset toàn bộ trước
+    resetHighlights(); 
+
+    // Đi vào danh sách liên kết và bật đèn cho đúng Node đó
+    int currentIndex = 0;
+    for (auto& node : table[bucketIndex]) {
+        if (currentIndex == nodeDepth) {
+            node.isHighlighted = true;
+            return;
+        }
+        currentIndex++;
+    }
 }

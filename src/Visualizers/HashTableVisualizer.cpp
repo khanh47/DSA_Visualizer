@@ -49,50 +49,102 @@ void HashTableVisualizer::renderChaining(sf::RenderWindow& window) {
 
     for (int i = 0; i < capacity; ++i) {
         float currentY = startY + i * (boxH + vGap);
-        drawBox(window, startX, currentY, "Index " + std::to_string(i), sf::Color(50, 66, 96));
+
+    // TÔ ĐỎ NẾU CỘT INDEX ĐANG ĐƯỢC CHỈ ĐỊNH
+        sf::Color bucketColor = (i == animBucketIndex || (isDeleting && i == deleteBucket)) 
+                                ? sf::Color(220, 60, 60) : sf::Color(50, 66, 96);
+        drawBox(window, startX, currentY, std::to_string(i), bucketColor);
 
         float currentX = startX + boxW + hGap;
         float prevX = startX + boxW;
 
+        int nodeIndex = 0;
         for (const auto& node : table[i]) {
-                drawArrow(window, prevX, currentY + boxH / 2.0f, currentX, currentY + boxH / 2.0f);
-    
-                sf::Color nodeColor;
+            // 2. HIDE NODE FOR INSERT: Only hide if we are currently animating an INSERT path
+            // We use targetBucket to ensure we only hide the node at the destination
+            if (isPathAnimating && i == targetBucket && nodeIndex == targetDepth) {
+                nodeIndex++;
+                continue;
+            }
 
-                if (node.isHighlighted) {
-                    // --- ANIMATION NHẤP NHÁY Ở ĐÂY ---
-                    // Dùng hàm sin() để tạo dao động từ 0.0 đến 1.0 theo thời gian
-                    float pulse = (std::sin(elapsedTime * 8.0f) + 1.0f) / 2.0f;
-                    
-                    // Trộn màu Đỏ (255, 50, 50) và màu Vàng (255, 255, 50) theo nhịp đập
-                    std::uint8_t greenChannel = static_cast<std::uint8_t>(50 + pulse * 205);
-                    nodeColor = sf::Color(255, greenChannel, 50);
-                } else {
-                    nodeColor = sf::Color(100, 149, 237); // Màu xanh lam bình thường
-                }
-                
-                std::string text = node.value.empty() ? node.key : node.key + ":" + node.value;
-                drawBox(window, currentX, currentY, text, nodeColor);
+            // 3. DRAW ARROW
+            drawArrow(window, prevX, currentY + boxH / 2.0f, currentX, currentY + boxH / 2.0f);
+            
+            sf::Color nodeColor;
 
-                prevX = currentX + boxW;
-                currentX += boxW + hGap;
+            // 4. HIGHLIGHT NODE COLOR
+            // Check if this specific node is the one being deleted
+            bool isBeingDeleted = (isDeleting && i == deleteBucket && node.key == deleteTargetKey);
+
+            if (node.isHighlighted || isBeingDeleted) {
+                // Pulse effect for both Search result and Deletion target
+                float pulse = (std::sin(elapsedTime * 8.0f) + 1.0f) / 2.0f;
+                std::uint8_t greenChannel = static_cast<std::uint8_t>(50 + pulse * 205);
+                nodeColor = sf::Color(255, greenChannel, 50); // Flashing Red-Yellow
+            } else {
+                nodeColor = sf::Color(100, 149, 237); // Default Blue
+            }
+            
+            // 5. DRAW NODE BOX
+            std::string text = node.value.empty() ? node.key : node.key + " : " + node.value;
+            drawBox(window, currentX, currentY, text, nodeColor);
+
+            // Update positions for the next node in the chain
+            prevX = currentX + boxW;
+            currentX += boxW + hGap;
+            nodeIndex++; 
         }
     }
 }
 
 void HashTableVisualizer::drawBox(sf::RenderWindow& window, float x, float y, const std::string& textStr, sf::Color bgColor) {
-    sf::RectangleShape box({100.0f, 50.0f});
+    // Set the dimensions and corner radius
+    float boxWidth = 100.0f;
+    float boxHeight = 50.0f;
+    float cornerRadius = 12.0f; // Độ bo góc (bạn có thể tăng giảm tùy ý)
+
+    // 1. Create a ConvexShape to draw the rounded rectangle
+    sf::ConvexShape box;
+    const int pointsPerCorner = 10; // Number of points to make the curve smooth
+    box.setPointCount(pointsPerCorner * 4);
+
+    const float pi = 3.141592654f;
+    int pointIndex = 0;
+
+    // Helper lambda to calculate points for each rounded corner
+    auto addCorner = [&](float cx, float cy, float startAngle) {
+        for (int i = 0; i < pointsPerCorner; ++i) {
+            float angle = startAngle + (i * (pi / 2.0f) / (pointsPerCorner - 1));
+            float px = cx + cornerRadius * std::cos(angle);
+            float py = cy + cornerRadius * std::sin(angle);
+            box.setPoint(pointIndex++, sf::Vector2f(px, py));
+        }
+    };
+
+    // Calculate and add the 4 corners
+    addCorner(boxWidth - cornerRadius, boxHeight - cornerRadius, 0.0f);            // Bottom-Right
+    addCorner(cornerRadius, boxHeight - cornerRadius, pi / 2.0f);                  // Bottom-Left
+    addCorner(cornerRadius, cornerRadius, pi);                                     // Top-Left
+    addCorner(boxWidth - cornerRadius, cornerRadius, 3.0f * pi / 2.0f);            // Top-Right
+
+    // Apply position and styles
     box.setPosition({x, y});
     box.setFillColor(bgColor);
     box.setOutlineThickness(2.0f);
     box.setOutlineColor(sf::Color::Black);
+    
+    // Draw the rounded box
     window.draw(box);
 
-    sf::Text text(font, textStr, 18);
+    // 2. Setup and center the text
+    sf::Text text(font, textStr, 22);
     text.setFillColor(sf::Color::White);
+    
     sf::FloatRect bounds = text.getLocalBounds();
     text.setOrigin({bounds.position.x + bounds.size.x / 2.0f, bounds.position.y + bounds.size.y / 2.0f});
-    text.setPosition({x + 50.0f, y + 25.0f});
+    text.setPosition({x + boxWidth / 2.0f, y + boxHeight / 2.0f});
+    
+    // Draw the text
     window.draw(text);
 }
 
@@ -142,19 +194,86 @@ std::string HashTableVisualizer::getProperties() const {
 void HashTableVisualizer::update(float deltaTime) {
     elapsedTime += deltaTime * currentSpeed; 
 
-    // Nếu đồng hồ đang chạy (> 0)
-    if (animationTimer > 0.0f) {
-        // Trừ dần thời gian (chạy nhanh/chậm tùy theo thanh trượt speed)
-        animationTimer -= deltaTime * currentSpeed; 
+    if (isDeleting) {
+        deleteTimer -= deltaTime * currentSpeed;
+        if (deleteTimer <= 0.0f) {
+            // TIME'S UP: Perform the actual deletion now
+            if (dataStructure) dataStructure->remove(deleteTargetKey);
+            isDeleting = false;
+            deleteBucket = -1;
+            deleteTargetKey = "";
+        }
+    }
+
+    if (isPathAnimating) {
+        stepTimer += deltaTime * currentSpeed;
         
-        // Khi đồng hồ đếm ngược về 0
+        // Step timing (0.8s per stage)
+        if (stepTimer >= 0.8f) { 
+            stepTimer = 0.0f;
+            
+            if (animBucketIndex == -1) {
+                // STAGE 1: Highlight only the Index box
+                animBucketIndex = targetBucket; 
+            } else {
+                // STAGE 2: Animation finished. Show the new node and start flashing.
+                isPathAnimating = false;
+                animBucketIndex = -1;
+                
+                // Turn on the flashing light for the newly inserted node
+                auto* chainingData = dynamic_cast<ChainingHashTable*>(dataStructure.get());
+                if (chainingData) chainingData->highlightNode(targetBucket, targetDepth);
+                
+                triggerAnimation(); // Start the 2-second countdown
+            }
+        }
+    } 
+    else if (animationTimer > 0.0f) {
+        animationTimer -= deltaTime * currentSpeed; 
         if (animationTimer <= 0.0f) {
             animationTimer = 0.0f;
-            if (dataStructure) {
-                // TẮT TOÀN BỘ NHẤP NHÁY !
-                dataStructure->resetHighlights(); 
-            }
+            if (dataStructure) dataStructure->resetHighlights(); 
         }
     }
 }
 void HashTableVisualizer::processEvents(const sf::Event& event) {}
+
+void HashTableVisualizer::animateInsert(int bucketIndex, int opType) {
+    isPathAnimating = true;
+    targetBucket = bucketIndex;
+    
+    // Determine the position of the new node (it's already at the end of the list)
+    auto* chainingData = dynamic_cast<ChainingHashTable*>(dataStructure.get());
+    if (chainingData) {
+        const auto& row = chainingData->getTable()[bucketIndex];
+        // TÌM VỊ TRÍ (DEPTH) DỰA TRÊN LOẠI THAO TÁC
+        if (opType == 1) { // 1 = INSERT (Lấy Node cuối cùng vừa thêm vào)
+            targetDepth = (int)chainingData->getTable()[bucketIndex].size() - 1; 
+        } else {
+            // For Delete/Search/Update: Find the depth of the specific key
+            // (Using deleteTargetKey as a reference if available)
+            int depth = 0;
+            for (const auto& node : row) {
+                if (node.key == deleteTargetKey) {
+                    targetDepth = depth;
+                    break;
+                }
+                depth++;
+            }
+        }
+    }
+
+    animBucketIndex = -1; // Start with nothing highlighted
+    stepTimer = 0.0f;
+    
+    if (dataStructure) dataStructure->resetHighlights();
+}
+
+void HashTableVisualizer::startDeleteAnimation(int bucketIndex, const std::string& key) {
+    isDeleting = true;
+    deleteBucket = bucketIndex;
+    deleteTargetKey = key;
+    deleteTimer = 1.5f; // Show the node for 1.5 seconds before removing
+    
+    if (dataStructure) dataStructure->resetHighlights();
+}

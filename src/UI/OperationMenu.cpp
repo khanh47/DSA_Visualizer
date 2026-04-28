@@ -113,6 +113,7 @@ void OperationMenu::buildUI() {
 
     menuItems = getOperationMenuItems(scene.getSceneTitle());
     const bool isLinkedList = scene.getSceneTitle() == "Linked List Visualization";
+    const bool isHashTable = (scene.getSceneTitle() == "Hash Table Visualization");
 
     const float buttonWidth = 120.0f;
     const float inputWidth = 90.0f;
@@ -138,12 +139,20 @@ void OperationMenu::buildUI() {
             if (item.type == OperationType::UPDATE) {
                 totalWidth += inputWidth * 2.0f + elementGap;
             } else if (item.type == OperationType::INSERT) {
+            // NẾU LÀ HASH TABLE: 2 ô (Key, Value)
+            if (isHashTable) {
+                totalWidth += inputWidth * 2.0f + elementGap;
+            } 
+            // NẾU LÀ LINKED LIST: Ô Value + Dropdown + Ô Index
+            else if (isLinkedList) {
+                totalWidth += inputWidth + elementGap + selectWidth + elementGap + indexInputWidth;
+            } 
+            // NẾU LÀ CÁC THUẬT TOÁN KHÁC (Trie...): Chỉ 1 ô Value
+            else {
                 totalWidth += inputWidth;
-                if (isLinkedList) {
-                    totalWidth += elementGap + selectWidth + elementGap + indexInputWidth;
-                }
+            }
             } else {
-                totalWidth += inputWidth;
+            totalWidth += inputWidth;
             }
         }
 
@@ -179,23 +188,30 @@ void OperationMenu::buildUI() {
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                isLinkedList ? "Index" : "Old", 20, 6
+                isHashTable ? "Key" : (isLinkedList ? "Index" : "Old"), 20, 6
             ));
             currentX += inputWidth + elementGap;
 
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
-                "New", 20, 6
+                isHashTable ? "New value" : "New", 20, 6
             ));
             currentX += inputWidth;
         } else if (item.type == OperationType::INSERT) {
-            inputTextBoxes.add(std::make_unique<UI::TextBox>(
-                sf::Vector2f(currentX, currentY),
-                sf::Vector2f(inputWidth, height),
-                "Value", 20, 6
-            ));
-            currentX += inputWidth;
+            if (isHashTable) {
+                // Hash Table hiện 2 ô: Key và Value
+                inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY), sf::Vector2f(inputWidth, height), "Key", 20, 6));
+                currentX += inputWidth + elementGap;
+                inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY), sf::Vector2f(inputWidth, height), "Value", 20, 6));
+                currentX += inputWidth;
+            } else {
+                // Các cái khác giữ nguyên 1 ô Value
+                inputTextBoxes.add(std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY), sf::Vector2f(inputWidth, height), "Value", 20, 6));
+                currentX += inputWidth;
 
             if (isLinkedList) {
                 currentX += elementGap;
@@ -206,27 +222,22 @@ void OperationMenu::buildUI() {
                     20
                 );
                 currentX += selectWidth;
-
-                currentX += elementGap;
-                insertIndexTextBox = std::make_unique<UI::TextBox>(
-                    sf::Vector2f(currentX, currentY),
-                    sf::Vector2f(indexInputWidth, height),
-                    "Index", 20, 4
-                );
-                currentX += indexInputWidth;
             }
         } else {
             std::string placeholder = "Value";
             if (item.type == OperationType::DELETE && isLinkedList) {
                 placeholder = "Index";
             }
+            if (isHashTable) placeholder = "Key";
+
+
             inputTextBoxes.add(std::make_unique<UI::TextBox>(
                 sf::Vector2f(currentX, currentY),
                 sf::Vector2f(inputWidth, height),
                 placeholder, 20, 6
             ));
             currentX += inputWidth;
-        }
+            }
 
         currentX += blockGap;
     }

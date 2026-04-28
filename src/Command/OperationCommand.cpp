@@ -10,22 +10,36 @@ void OperationCommand::execute() {
         return;
     }
 
+    bool isHT = scene->getSceneTitle() == "Hash Table Visualization";
+    
     switch (type) {
         case OperationType::INSERT:
-            scene->onInsert(menu ? menu->getInputValue(0) : "");
+            if (isHT)
+                scene->onInsert(menu->getInputValue(0), menu->getInputValue(1)); // Key-Value
+            else
+                scene->onInsert(menu->getInputValue(0), ""); // Single Value
             break;
+
         case OperationType::DELETE:
-            scene->onDelete(menu ? menu->getInputValue(1) : "");
+            // Nếu là HT, nút Insert chiếm 2 ô (0,1), nên ô Delete là ô số 2.
+            // Nếu không, nút Insert chiếm 1 ô (0), nên ô Delete là ô số 1.
+            scene->onDelete(menu->getInputValue(isHT ? 2 : 1));
             break;
+
         case OperationType::SEARCH:
-            scene->onSearch(menu ? menu->getInputValue(2) : "");
+            // Tương tự: HT là ô số 3, còn lại là ô số 2.
+            scene->onSearch(menu->getInputValue(isHT ? 3 : 2));
             break;
+
         case OperationType::UPDATE:
-            scene->onUpdate(
-                menu ? menu->getInputValue(3) : "",
-                menu ? menu->getInputValue(4) : ""
-            );
+            // HT: ô 4 (Key), ô 5 (Value).
+            // Còn lại: ô 3 (Index/Old), ô 4 (New).
+            if (isHT)
+                scene->onUpdate(menu->getInputValue(4), menu->getInputValue(5));
+            else
+                scene->onUpdate(menu->getInputValue(3), menu->getInputValue(4));
             break;
+            
         case OperationType::RANDOM:
             scene->onRandom();
             break;
