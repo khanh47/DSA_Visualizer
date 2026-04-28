@@ -54,6 +54,11 @@ void TrieScene::onUpdate(const std::string& key, const std::string& value) {
     }
     auto* v = dynamic_cast<TrieVisualizer*>(visualizer.get());
     if (v) {
+        // Check if key exists before attempting update
+        if (!v->wordExists(key)) {
+            displayStatus("Word \"" + key + "\" not found in trie!");
+            return;
+        }
         // Update = delete old + insert new; show insert pseudocode for the final step
         if (pseudocodePanel)
             pseudocodePanel->setPseudocode(Pseudocode::kTrieInsertTitle,

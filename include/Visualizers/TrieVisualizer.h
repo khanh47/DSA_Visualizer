@@ -76,6 +76,7 @@ public:
     void insertWord(const std::string& word);
     void searchWord(const std::string& word);
     void removeWord(const std::string& word);
+    bool wordExists(const std::string& word) const;
 
 private:
     // ── Data ──────────────────────────────────────────────────────────────

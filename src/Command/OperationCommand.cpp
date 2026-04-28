@@ -14,26 +14,26 @@ void OperationCommand::execute() {
     
     switch (type) {
         case OperationType::INSERT:
+            // Single-parameter version for LinkedList, Trie, Kruskal
+            // Two-parameter version for HashTable (Key-Value pairs)
             if (isHT)
-                scene->onInsert(menu->getInputValue(0), menu->getInputValue(1)); // Key-Value
+                scene->onInsert(menu->getInputValue(0), menu->getInputValue(1)); // (Key, Value)
             else
-                scene->onInsert(menu->getInputValue(0), ""); // Single Value
+                scene->onInsert(menu->getInputValue(0)); // (Value) only
             break;
 
         case OperationType::DELETE:
-            // Nếu là HT, nút Insert chiếm 2 ô (0,1), nên ô Delete là ô số 2.
-            // Nếu không, nút Insert chiếm 1 ô (0), nên ô Delete là ô số 1.
+            // LinkedList/Trie: Input[1] = Index/Word | HashTable: Input[2] = Key
             scene->onDelete(menu->getInputValue(isHT ? 2 : 1));
             break;
 
         case OperationType::SEARCH:
-            // Tương tự: HT là ô số 3, còn lại là ô số 2.
+            // LinkedList/Trie: Input[2] = Value/Word | HashTable: Input[3] = Key
             scene->onSearch(menu->getInputValue(isHT ? 3 : 2));
             break;
 
         case OperationType::UPDATE:
-            // HT: ô 4 (Key), ô 5 (Value).
-            // Còn lại: ô 3 (Index/Old), ô 4 (New).
+            // LinkedList/Trie: Input[3]=Index, Input[4]=NewValue | HashTable: Input[4]=Key, Input[5]=NewValue
             if (isHT)
                 scene->onUpdate(menu->getInputValue(4), menu->getInputValue(5));
             else

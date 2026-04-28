@@ -173,6 +173,10 @@ void TrieVisualizer::removeWord(const std::string& word) {
     currentStep = 0;
 }
 
+bool TrieVisualizer::wordExists(const std::string& word) const {
+    return trie.search(word);
+}
+
 // ── Layout ────────────────────────────────────────────────────────────────────
 float TrieVisualizer::calculateSubtreeWidths(TrieNode* node,
                                               std::map<TrieNode*, float>& widths) {
