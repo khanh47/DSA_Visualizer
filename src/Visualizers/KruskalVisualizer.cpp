@@ -36,6 +36,11 @@ KruskalVisualizer::KruskalVisualizer() {
 
 void KruskalVisualizer::rebuildSortedEdges() {
     sortedEdges = graph.getEdges();
+    std::sort(sortedEdges.begin(), sortedEdges.end(), [](const auto& a, const auto& b) {
+        if (a.w != b.w) return a.w < b.w;
+        if (a.u != b.u) return a.u < b.u;
+        return a.v < b.v;
+    });
 }
 
 void KruskalVisualizer::buildStaticLayout() {
@@ -119,15 +124,6 @@ void KruskalVisualizer::run() {
         buildStaticLayout();
     }
     rebuildSortedEdges();
-    std::sort(sortedEdges.begin(), sortedEdges.end(), [](const auto& a, const auto& b) {
-        if (a.w != b.w) {
-            return a.w < b.w;
-        }
-        if (a.u != b.u) {
-            return a.u < b.u;
-        }
-        return a.v < b.v;
-    });
     mstEdges = graph.runKruskal();
     currentEdgeIndex = 0;
     animationElapsed = 0.0f;

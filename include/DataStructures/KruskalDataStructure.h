@@ -31,10 +31,6 @@ public:
         }
     };
 
-    bool cmp(Edge a, Edge b) {
-        return a.w < b.w;
-    };
-
     KruskalDataStructure() = default;
     ~KruskalDataStructure() = default;
 
