@@ -403,9 +403,17 @@ void TrieVisualizer::goToNextStep()     { if (currentStep < static_cast<int>(ste
 void TrieVisualizer::goToFinalStep()    { if (!steps.empty()) { currentStep = static_cast<int>(steps.size())-1; elapsedTime = 0.f; } }
 
 void TrieVisualizer::reset() {
-    trie = Trie(); currentWords.clear(); steps.clear();
-    currentStep = 0; elapsedTime = 0.f; isAnimating = false;
-    nodePool.clear(); edgeList.clear();
+    trie.clear();  // Use clear() instead of assignment to avoid shallow copy
+    currentWords.clear(); 
+    steps.clear();
+    currentStep = 0;  // Reset to 0 when steps is empty
+    elapsedTime = 0.f; 
+    isAnimating = false;
+    nodePool.clear(); 
+    edgeList.clear();
+    scanProgress = 0.f;
+    isScanning = false;
+    globalPulse = 0.f;
 }
 
 std::string TrieVisualizer::getProperties() const {
