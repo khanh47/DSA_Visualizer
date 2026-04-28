@@ -222,8 +222,9 @@ void OperationMenu::buildUI() {
                     20
                 );
                 currentX += selectWidth;
-            }
-        } else {
+                }
+            } 
+        }    else {
             std::string placeholder = "Value";
             if (item.type == OperationType::DELETE && isLinkedList) {
                 placeholder = "Index";
