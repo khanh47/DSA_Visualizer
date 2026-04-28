@@ -11,6 +11,38 @@ namespace Pseudocode {
 
 // ── Linked List ─────────────────────────────────────────────────────────
 
+inline const std::string kLinkedListInsertHeadTitle = "INSERT AT HEAD";
+inline const std::vector<std::string> kLinkedListInsertHead = {
+    "Node newNode = new Node(value)", // 0
+    "newNode->next = head",           // 1
+    "head = newNode",                 // 2
+};
+
+inline const std::string kLinkedListInsertTailTitle = "INSERT AT TAIL";
+inline const std::vector<std::string> kLinkedListInsertTail = {
+    "Node newNode = new Node(value)", // 0
+    "if head == null:",               // 1
+    "    head = newNode",             // 2
+    "    return",                     // 3
+    "cur = head",                     // 4
+    "while cur->next != null:",       // 5
+    "    cur = cur->next",            // 6
+    "cur->next = newNode",            // 7
+};
+
+inline const std::string kLinkedListInsertIndexTitle = "INSERT AT INDEX";
+inline const std::vector<std::string> kLinkedListInsertIndex = {
+    "Node newNode = new Node(value)", // 0
+    "if index == 1:",                 // 1
+    "    newNode->next = head",       // 2
+    "    head = newNode",             // 3
+    "    return",                     // 4
+    "cur = head",                     // 5
+    "for i = 1 to index - 2:",        // 6
+    "    cur = cur->next",            // 7
+    "newNode->next = cur->next",      // 8
+    "cur->next = newNode",            // 9
+};
 
 inline const std::string kLinkedListSearchTitle = "SEARCH";
 inline const std::vector<std::string> kLinkedListSearch = {

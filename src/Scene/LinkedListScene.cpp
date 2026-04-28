@@ -24,9 +24,22 @@ void LinkedListScene::onInsert(const std::string& value) {
                     std::string indexStr = operationMenu ? operationMenu->getInsertIndex() : "";
                     if (indexStr.empty()) return;
                     int index = std::stoi(indexStr);
+                    if (pseudocodePanel) {
+                        pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertIndexTitle,
+                                                       Pseudocode::kLinkedListInsertIndex);
+                    }
                     llVisualizer->insertAtIndex(val, index);
                 } else {
                     bool atHead = (option == "At Head");
+                    if (pseudocodePanel) {
+                        if (atHead) {
+                            pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertHeadTitle,
+                                                           Pseudocode::kLinkedListInsertHead);
+                        } else {
+                            pseudocodePanel->setPseudocode(Pseudocode::kLinkedListInsertTailTitle,
+                                                           Pseudocode::kLinkedListInsertTail);
+                        }
+                    }
                     llVisualizer->insertValue(val, atHead);
                 }
             }
