@@ -56,9 +56,9 @@ private:
 
     void recordStep(const std::string& activeWord, int charIdx, const std::string& desc, const std::string& op);
     
-    // Default arguments added so `updateVisualization();` runs properly
     void updateVisualization(float windowWidth = 1600.f, float windowHeight = 900.f); 
     
     float calculateSubtreeWidths(TrieNode* node, std::map<TrieNode*, float>& widths);
+    float calculateTreeHeight(TrieNode* node); // Calculates total vertical space
     void buildTreeLayout(TrieNode* node, float x, float y, const std::string& currentPath, const TrieStep& stepState, std::map<TrieNode*, float>& widths, float windowWidth, float windowHeight);
 };
