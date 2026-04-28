@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <vector>
-#include <queue>
 
 struct InsertStep {
     std::vector<int> nodeValues;
