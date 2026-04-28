@@ -222,6 +222,13 @@ void OperationMenu::buildUI() {
                     20
                 );
                 currentX += selectWidth;
+                currentX += elementGap;
+                insertIndexTextBox = std::make_unique<UI::TextBox>(
+                    sf::Vector2f(currentX, currentY),
+                    sf::Vector2f(indexInputWidth, height),
+                    "Index", 20, 4
+                );
+                currentX += indexInputWidth;
                 }
             }
         } else {
