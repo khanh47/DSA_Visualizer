@@ -101,6 +101,46 @@ inline const std::vector<std::string> kTrieDelete = {
     "    cur = cur.children[c]",           // 4
     "cur.isEndOfWord = false",             // 5
     "prune unused nodes if any",           // 6
+
+
+};
+
+// ── Hash Table (Chaining) ───────────────────────────────────────────────
+
+inline const std::string kHashInsertTitle = "INSERT (CHAINING)";
+inline const std::vector<std::string> kHashInsert = {
+    "index = hash(key)",                     // 0
+    "for each node in table[index]:",        // 1
+    "    if node.key == key: return false",  // 2 
+    "table[index].push_back({key, value})",  // 3 
+    "return true",                           // 4
+};
+
+inline const std::string kHashSearchTitle = "SEARCH (CHAINING)";
+inline const std::vector<std::string> kHashSearch = {
+    "index = hash(key)",                     // 0
+    "for each node in table[index]:",        // 1
+    "    if node.key == key: return true",   // 2 
+    "return false",                          // 3 
+};
+
+inline const std::string kHashDeleteTitle = "DELETE (CHAINING)";
+inline const std::vector<std::string> kHashDelete = {
+    "index = hash(key)",                     // 0
+    "for each node in table[index]:",        // 1
+    "    if node.key == key:",               // 2 
+    "        remove node; return true",      // 3 (Đã xóa)
+    "return false",                          // 4
+};
+
+inline const std::string kHashUpdateTitle = "UPDATE (CHAINING)";
+inline const std::vector<std::string> kHashUpdate = {
+    "index = hash(key)",                     // 0
+    "for each node in table[index]:",        // 1
+    "    if node.key == key:",               // 2
+    "        node.value = newValue",         // 3 
+    "        return true",                   // 4
+    "return false",                          // 5
 };
 
 } // namespace Pseudocode
