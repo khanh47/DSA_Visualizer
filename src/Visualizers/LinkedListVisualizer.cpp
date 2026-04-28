@@ -340,7 +340,7 @@ void LinkedListVisualizer::update(float deltaTime) {
     }
 
     // Step-based auto-advance
-    if ((autoRun || isAnimating) && currentStep < static_cast<int>(steps.size()) - 1) {
+    if (autoRun && currentStep < static_cast<int>(steps.size()) - 1) {
         bool isBlinkStep       = steps[currentStep].blinkIndex >= 0;
         bool isSearchFoundStep = steps[currentStep].searchFoundIndex >= 0;
         float stepDelay = isBlinkStep ? 1.5f : (isSearchFoundStep ? 2.5f : 0.75f);
