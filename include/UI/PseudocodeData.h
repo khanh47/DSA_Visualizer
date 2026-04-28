@@ -52,4 +52,37 @@ inline const std::vector<std::string> kKruskalMain = {
     "if mst.size == n - 1: return mst",   // 5
 };
 
+// ── Trie ─────────────────────────────────────────────────────────────────
+
+inline const std::string kTrieInsertTitle = "INSERT";
+inline const std::vector<std::string> kTrieInsert = {
+    "cur = root",                          // 0
+    "for each char c in word",             // 1
+    "    if cur.children[c] == null",      // 2
+    "        cur.children[c] = new Node",  // 3
+    "    cur = cur.children[c]",           // 4
+    "cur.isEndOfWord = true",              // 5
+};
+
+inline const std::string kTrieSearchTitle = "SEARCH";
+inline const std::vector<std::string> kTrieSearch = {
+    "cur = root",                          // 0
+    "for each char c in word",             // 1
+    "    if cur.children[c] == null",      // 2
+    "        return NOT_FOUND",            // 3
+    "    cur = cur.children[c]",           // 4
+    "return cur.isEndOfWord",              // 5
+};
+
+inline const std::string kTrieDeleteTitle = "DELETE";
+inline const std::vector<std::string> kTrieDelete = {
+    "cur = root",                          // 0
+    "for each char c in word",             // 1
+    "    if cur.children[c] == null",      // 2
+    "        return (word not found)",     // 3
+    "    cur = cur.children[c]",           // 4
+    "cur.isEndOfWord = false",             // 5
+    "prune unused nodes if any",           // 6
+};
+
 } // namespace Pseudocode
