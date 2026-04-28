@@ -9,15 +9,11 @@ private:
     HashTableVisualizer* getHashVisualizer();
 
         // --- CÁC BIẾN RIÊNG CHO HASH TABLE ---
-    sf::Text formulaText;             // Chữ hiển thị công thức ở phía trên
     std::vector<std::string> mathSteps; // Danh sách các bước giải toán
     float mathTimer = 0.0f;           // Đồng hồ đếm bước
     int currentStepIndex = -1;        // Chỉ số bước hiện tại
 
 
-    int pendingAnimIndex = -1; // Lưu tạm Index đợi vẽ
-    int pendingOpType = 0; // --- THÊM BIẾN NÀY (0: Không có gì, 1: Insert, 2: Delete) ---
-    void onStatusSequenceFinished() override; // Hàm nhận tín hiệu từ lớp cha
 
 public:
     HashTableScene(SceneManager& sceneManager);

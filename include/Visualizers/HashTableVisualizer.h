@@ -1,63 +1,54 @@
 #pragma once
-#include "BaseVisualizer.h" 
-#include "IHashTable.h"
+#include "BaseVisualizer.h"
 #include "ChainingHashTable.h"
-#include <memory>
+#include <vector>
+#include <list>
 #include <SFML/Graphics.hpp>
+
+// Snapshot structure to store the table at a specific step
+struct HashSnapshot {
+    std::vector<std::list<HashNode>> tableState;
+    int highlightBucket = -1;
+    int highlightNodeIdx = -1;
+};
 
 class HashTableVisualizer : public BaseVisualizer {
 private:
     std::unique_ptr<IHashTable> dataStructure;
     sf::Font font;
-
-    float elapsedTime = 0.0f;    
-    float currentSpeed = 1.0f;
-    float animationTimer = 0.0f;
-
-    bool isPathAnimating = false;   // Đang chạy hiệu ứng dò đường?
-    int targetBucket = -1;          // Cột Index mục tiêu
-    int targetDepth = -1;           // Phải đi qua bao nhiêu Node
-    int animBucketIndex = -1;       // Cột Index đang được bôi đỏ
-    float stepTimer = 0.0f;         // Đồng hồ chuyển bước dò đường
-
-    bool isDeleting = false;
-    int deleteBucket = -1;
-    std::string deleteTargetKey = "";
-    float deleteTimer = 0.0f;
-
-    // Draw Helpers
-    void drawBox(sf::RenderWindow& window, float x, float y, const std::string& text, sf::Color bgColor);
-    void drawArrow(sf::RenderWindow& window, float startX, float startY, float endX, float endY);
     
-    // Specific Renderers for different modes
+    // Snapshot System
+    std::vector<HashSnapshot> history;
+    int currentStep = 0;
+
+    // Animation Timer (Only used for the sine wave pulsing effect now)
+    float elapsedTime = 0.0f;
+    float currentSpeed = 1.0f;
+
+    // Helper draw functions (drawBox now returns its dynamic width)
+    float drawBox(sf::RenderWindow& window, float x, float y, const std::string& text, sf::Color bgColor);
+    void drawArrow(sf::RenderWindow& window, float x1, float y1, float x2, float y2);
     void renderChaining(sf::RenderWindow& window);
-    // void renderLinearProbing(sf::RenderWindow& window); // Add later
 
 public:
     HashTableVisualizer();
+    
+    // --- SNAPSHOT CONTROLS ---
+    void clearHistory();
+    void recordState(int bucket = -1, int nodeIdx = -1);
+    void setStep(int stepIndex);
 
-    std::string getProperties() const override; 
-
+    IHashTable* getData() { return dataStructure.get(); }
+    void setMode(HashMode mode);
+    
+    // --- OVERRIDES ---
+    void reset() override;
+    void update(float deltaTime) override; 
+    void render(sf::RenderWindow& window) override;
     void setPlaybackSpeed(float speed) override;
 
-    void triggerAnimation(); 
-    
-    void setMode(HashMode mode); // Switch between chaining, probing, etc.
-    IHashTable* getData() { return dataStructure.get(); }
-
-    void reset() override;
-    void update(float deltaTime) override;
-    void render(sf::RenderWindow& window) override;
-    void processEvents(const sf::Event& event) override;
-
-    // Required by BaseVisualizer
+    // --- UNUSED OVERRIDES ---
+    void processEvents(const sf::Event& event) override {}
     void setAutoRun(bool value) override {}
-    void goToFirstStep() override {}
-    void goToPreviousStep() override {}
-    void goToNextStep() override {}
-    void goToFinalStep() override {}
-
-    void animateInsert(int bucketIndex, int opType);
-
-    void startDeleteAnimation(int bucketIndex, const std::string& key);
+    std::string getProperties() const override { return "Hash Table Visualizer"; }
 };
