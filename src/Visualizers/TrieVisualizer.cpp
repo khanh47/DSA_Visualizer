@@ -350,7 +350,7 @@ void TrieVisualizer::update(float deltaTime) {
     }
 
     // Auto-advance steps
-    if ((autoRun || isAnimating) && currentStep < static_cast<int>(steps.size()) - 1) {
+    if (autoRun && currentStep < static_cast<int>(steps.size()) - 1) {
         float stepDelay = 0.65f / std::max(0.1f, playbackSpeed);
         elapsedTime += deltaTime;
         if (elapsedTime >= stepDelay) { elapsedTime = 0.f; goToNextStep(); }
