@@ -65,16 +65,36 @@ void TrieVisualizer::insertWord(const std::string& word) {
 
     // line 0: cur = root
     recordStep("", -1, "Insert \"" + word + "\": cur = root", "INSERT", 0);
+
+    // Simulate traversal to know which nodes already exist
+    TrieNode* probe = trie.getRoot();
     for (size_t i = 1; i <= word.length(); ++i) {
-        // line 1: for each char
+        unsigned char ch = static_cast<unsigned char>(word[i-1]);
+        bool childMissing = !(probe && probe->children[ch]);
+
+        // line 1: for each char c in word
         recordStep(word, static_cast<int>(i) - 1,
                    "Insert \"" + word + "\": check children['" + word[i-1] + "']",
                    "INSERT", 1);
-        // line 2-3: create node if missing, line 4: cur = children[c]
+
+        if (childMissing) {
+            // line 2: if cur.children[c] == null  →  line 3: create new node
+            recordStep(word, static_cast<int>(i) - 1,
+                       "Insert \"" + word + "\": children['" + word[i-1] + "'] is null - create new node",
+                       "INSERT", 2);
+            recordStep(word, static_cast<int>(i) - 1,
+                       "Insert \"" + word + "\": allocating new node for '" + word[i-1] + "'",
+                       "INSERT", 3);
+        }
+
+        // line 4: cur = cur.children[c]
         recordStep(word, static_cast<int>(i),
                    "Insert \"" + word + "\": follow '" + word[i-1]
                    + "' (prefix \"" + word.substr(0,i) + "\")",
-                   "INSERT", i <= word.length() ? 4 : 3);
+                   "INSERT", 4);
+
+        if (probe && probe->children[ch])
+            probe = probe->children[ch];
     }
 
     trie.insert(word);
